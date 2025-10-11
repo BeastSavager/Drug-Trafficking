@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Contact Us - ShadowNet</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: { primary: "#0f66bd" },
+          fontFamily: { display: ["Inter", "sans-serif"] },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200">
+
+  <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+      <header class="flex items-center justify-between border-b border-black/10 dark:border-white/10 px-10 py-4">
+        <div class="flex items-center gap-4 text-white">
+          <svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
+            <path d="M12 2L3 8.5V21H21V8.5L12 2Z" fill="currentColor"></path>
+          </svg>
+          <h2 class="text-lg font-bold text-black dark:text-white">ShadowNet</h2>
+        </div>
+        <nav class="hidden items-center gap-8 md:flex">
+          <a href="HP1.html" class="text-sm text-black/60 dark:text-white/60 hover:text-black/80 dark:hover:text-white/80">Home</a>
+          <a href="DP1.html" class="text-sm text-black/60 dark:text-white/60 hover:text-black/80 dark:hover:text-white/80">Dashboard</a>
+          <a href="CP.html" class="text-sm text-primary font-bold">Contact</a>
+        </nav>
+      </header>
+
+      <main class="flex flex-1 justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-4xl space-y-12">
+          <div>
+            <h1 class="text-4xl font-bold text-slate-900 dark:text-white">Contact Us</h1>
+            <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
+              Send us your feedback below.
+            </p>
+          </div>
+
+          <!-- Feedback form -->
+          <form id="feedbackForm" class="space-y-6">
+            <div>
+              <label for="name" class="block text-sm font-medium">Your Name</label>
+              <input id="name" name="name" type="text" required
+                class="form-input mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark py-3 px-4">
+            </div>
+            <div>
+              <label for="email" class="block text-sm font-medium">Your Email</label>
+              <input id="email" name="email" type="email" required
+                class="form-input mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark py-3 px-4">
+            </div>
+            <div>
+              <label for="feedback" class="block text-sm font-medium">Your Feedback</label>
+              <textarea id="feedback" name="feedback" rows="4" required
+                class="form-textarea mt-1 w-full rounded-lg border-slate-300 dark:border-slate-700 bg-background-light dark:bg-background-dark py-3 px-4"></textarea>
+            </div>
+            <button type="submit"
+              class="flex w-full justify-center py-3 px-4 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary/90">
+              Submit Feedback
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://vqfxctrgyfbqynililgp.supabase.co";  // ✅ your project URL
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HEREeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxZnhjdHJneWZicXluaWxpbGdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODEwODUsImV4cCI6MjA3NTY1NzA4NX0.Sz9pdnwsKmjaQ20jN9KIrIU7Cvm7wKZZl5Ka0c__VwE";             // 🔑 paste your anon key here
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const { name, email, feedback } = Object.fromEntries(new FormData(form).entries());
+
+      const { error } = await supabase.from('feedback').insert([{ name, email, feedback }]);
+      if (error) {
+        alert('❌ Failed to submit: ' + error.message);
+      } else {
+        alert('✅ Thank you for your feedback!');
+        form.reset();
+      }
+    });
+  </script>
+
+</body>
+</html>
