@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+  <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Inter%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet" />
+  <title>Home</title>
+  <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <style>
+    .tab {
+      cursor: pointer;
+      padding: 10px;
+      display: inline-block;
+      background: #eee;
+      transition: transform 0.2s, border-bottom 0.2s;
+    }
+    .tab.active {
+      background: #ccc;
+    }
+    .tab.hovered {
+      transform: scale(1.1);
+      border-bottom: 2px solid #0078d7;
+    }
+    #tab-content {
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#0f66bd",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            display: ["Inter"],
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+    <div class="flex h-full grow flex-col">
+      <header class="flex items-center justify-between whitespace-nowrap border-b border-black/10 dark:border-white/10 px-10 py-4">
+        <div class="flex items-center gap-4 text-white">
+          <svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path clip-rule="evenodd" d="M12 2L3 8.5V21H21V8.5L12 2ZM5 9.5L12 4L19 9.5V19H5V9.5Z" fill="currentColor" fill-rule="evenodd"></path>
+            <path d="M9 14H15V16H9V14Z" fill="currentColor"></path>
+          </svg>
+          <h2 class="text-lg font-bold tracking-tight text-black dark:text-white">ShadowNet</h2>
+        </div>
+
+        <nav class="hidden items-center gap-8 md:flex">
+          <a class="text-sm font-medium text-black/60 transition-colors hover:text-black/80 dark:text-white/60 dark:hover:text-white/80" href="index.html">Home</a>
+          <a class="text-sm font-medium text-black/60 transition-colors hover:text-black/80 dark:text-white/60 dark:hover:text-white/80" href="DP1.html">Dashboard</a>
+          <a class="text-sm font-medium text-black/60 transition-colors hover:text-black/80 dark:text-white/60 dark:hover:text-white/80" href="cp.html">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+          <button class="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-primary/90">
+            <span class="truncate">Login</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="flex flex-1 items-center justify-center py-12 md:py-24">
+        <div class="container mx-auto px-4">
+          <div class="flex min-h-[500px] flex-col items-center justify-center rounded-xl bg-cover bg-center p-8 text-center" style='background-image: linear-gradient(rgba(16, 25, 34, 0.7), rgba(16, 25, 34, 0.9)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAvX4B5-B7ag056gYm7zkttXRbtXAo6Tl4LTt0O1ZfFGtx3lKoNGSoOaZYaK7TJAEHcRt4Qv8T6jBqQfjix1dpyM8jKtjYkJz2S9McEkiTn-DnN4M4NJXDHUpAa8PFqkPWYt5bayhxVuVBJCl62C8aN_h0nrTcG1I6Gf0k9S6C30_ADqBERGrBjqaK4UIi4aU41PEJbgaESut3Q4acoAQq5-7nvEb0yKkOMbQ7veS8Xiq9wmjJ-OWXdpQ46oXGpfJ5dBYy79ONKQuc");'>
+            <div class="flex max-w-3xl flex-col items-center gap-6">
+              <h1 class="text-4xl font-black tracking-tighter text-white sm:text-5xl md:text-6xl">Unmasking the Shadows</h1>
+              <p class="text-base text-white/80 md:text-lg">
+                Our mission is to combat the rise of drug trafficking on encrypted messaging platforms. We leverage advanced analytics to identify and expose individuals involved
+                in illicit activities, ensuring a safer digital environment for all.
+              </p>
+              <button class="mt-4 flex h-12 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-5 text-base font-bold text-white transition-colors hover:bg-primary/90">
+                <span class="truncate">Learn More</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the current page filename (e.g., "HP1.html")
+      const currentPage = window.location.pathname.split('/').pop();
+      // Select all navigation links in the header
+      const navLinks = document.querySelectorAll('header nav a');
+
+      navLinks.forEach(link => {
+        const linkPage = link.getAttribute('href');
+        // Check if the link's href matches the current page
+        if (linkPage === currentPage) {
+          // Remove default color classes
+          link.classList.remove('text-black/60', 'dark:text-white/60', 'hover:text-black/80', 'dark:hover:text-white/80');
+          // Add active color classes
+          link.classList.add('text-primary', 'dark:text-primary', 'font-bold');
+        }
+      });
+    });
+  </script>
+  <script src="tabs.js"></script>
+</body>
+</html>

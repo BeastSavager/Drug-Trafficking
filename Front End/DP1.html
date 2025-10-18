@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#0f66bd",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            display: ["Inter"],
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px",
+          },
+        },
+      },
+    };
+  </script>
+
+  <style type="text/tailwindcss">
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.3);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+    .animate-pulse-ring {
+      animation: pulse-ring 1.5s cubic-bezier(0.66, 0, 0, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="flex min-h-screen w-full flex-col">
+    <header class="flex items-center justify-between border-b border-black/10 dark:border-white/10 px-4 sm:px-6 lg:px-8 py-3 shrink-0">
+      <div class="flex items-center gap-3 text-slate-900 dark:text-white">
+        <svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+        </svg>
+        <a href="index.htm" class="ml-2"><h1 class="text-lg font-bold">Drug Trafficking Tracker</h1></a>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-6">
+        <a class="text-sm font-medium text-black/60 dark:text-white/60 hover:text-black/80 dark:hover:text-white/80" href="index.htm">Home</a>
+        <a class="text-sm font-medium text-black/60 dark:text-white/60 hover:text-black/80 dark:hover:text-white/80" href="DP1.html">Dashboard</a>
+        <a class="text-sm font-medium text-black/60 dark:text-white/60 hover:text-black/80 dark:hover:text-white/80" href="cp.html">Contact</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <button class="relative rounded-full p-2 text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute top-1 right-1 flex h-3 w-3">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-pulse-ring"></span>
+            <span class="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+          </span>
+        </button>
+        <div class="h-10 w-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWkr2YZtPNY7FIaT73WtzIN0A9nEtCq115LajOD2OfydyrC4gPrE9piDwjgA4X21x9PXU-oECRNtV5b95ruZXOdZE_AXczUFK_YjZBRK9BV8SkDmnaAUnQK1SeOoPDNzOEKCrX8Jam1wSYDTLyLhXJ5q2QJr0-T-m6JnuK7L6qMXmPs7w58fhUGb5-U7E-t2-ISERopHnGY5sHWBW6RhIAF5NGpl-xksVPmWS-O-pRIcXux22VbYOsuXEotd39xo1TXpU3obvLlRk");'></div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h2>
+          <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary/90">
+            <span class="material-symbols-outlined text-base">download</span>
+            <span>Generate Report</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div class="relative rounded-lg bg-white dark:bg-slate-800/50 p-6 shadow-sm overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 to-transparent opacity-30 pointer-events-none z-0"></div>
+            <p class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-400 relative z-10">Real-time Alerts</p>
+            <p class="text-4xl font-bold text-red-500 dark:text-red-400 relative z-10 animate-pulse">12</p>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 absolute bottom-4 right-4 text-6xl opacity-70">notifications_active</span>
+          </div>
+
+          <div class="rounded-lg bg-white dark:bg-slate-800/50 p-6 shadow-sm relative overflow-hidden">
+            <p class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-400">Active Accounts</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">1,234</p>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 absolute bottom-4 right-4 text-6xl opacity-70">person_add</span>
+          </div>
+
+          <div class="rounded-lg bg-white dark:bg-slate-800/50 p-6 shadow-sm relative overflow-hidden">
+            <p class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-400">Flagged Keywords</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">567</p>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 absolute bottom-4 right-4 text-6xl opacity-70">flag</span>
+          </div>
+
+          <div class="rounded-lg bg-white dark:bg-slate-800/50 p-6 shadow-sm relative overflow-hidden">
+            <p class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-400">Alerts Generated (24h)</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white">890</p>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 absolute bottom-4 right-4 text-6xl opacity-70">warning</span>
+          </div>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 rounded-lg bg-white dark:bg-slate-800/50 p-6 shadow-sm">
+            <h3 class="mb-4 text-lg font-bold text-slate-900 dark:text-white">Keyword Frequency Over Time</h3>
+            <div class="h-80">
+              <!-- simple svg chart; replace with real chart when backend available -->
+              <svg fill="none" height="100%" preserveAspectRatio="none" viewBox="0 0 472 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#0f66bd" stroke-linecap="round" stroke-width="2">
+                  <animate attributeName="stroke-dasharray" begin="0s" dur="3s" from="0 500" repeatCount="indefinite" to="500 0"></animate>
+                </path>
+                <path d="M0 149 L 472 149" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"></path>
+                <defs>
+                  <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_chart" x1="236" x2="236" y1="1" y2="149">
+                    <stop stop-color="#0f66bd" stop-opacity="0.3"></stop>
+                    <stop offset="1" stop-color="#0f66bd" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H0V109Z" fill="url(#paint0_linear_chart)">
+                  <animate attributeName="opacity" begin="0s" dur="2s" from="0" repeatCount="indefinite" to="1"></animate>
+                </path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-white dark:bg-slate-800/50 p-6 shadow-sm">
+            <h3 class="mb-4 text-lg font-bold text-slate-900 dark:text-white">Recent Critical Alerts</h3>
+            <div class="space-y-4 max-h-80 overflow-y-auto pr-2">
+              <div class="flex items-start gap-3 bg-red-50 dark:bg-red-950/50 p-3 rounded-lg border border-red-200 dark:border-red-900 animate-pulse">
+                <span class="material-symbols-outlined text-red-600 dark:text-red-400 shrink-0">crisis_alert</span>
+                <div>
+                  <p class="text-sm font-medium text-red-800 dark:text-red-300">New suspicious activity detected for @user101.</p>
+                  <p class="text-xs text-red-600 dark:text-red-400">Keyword: "Prescription Drugs" - 5 minutes ago</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 bg-yellow-50 dark:bg-yellow-950/50 p-3 rounded-lg border border-yellow-200 dark:border-yellow-900">
+                <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 shrink-0">warning</span>
+                <div>
+                  <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Account @user456 flagged for multiple connections.</p>
+                  <p class="text-xs text-yellow-600 dark:text-yellow-400">Platform: Instagram - 30 minutes ago</p>
+                </div>
+              </div>
+
+              <!-- more alerts... -->
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Suspicious Accounts</h3>
+
+            <div class="relative w-full max-w-xs">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span class="material-symbols-outlined text-slate-400">search</span>
+              </div>
+              <input class="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-primary focus:ring-primary" placeholder="Search accounts..." type="text"/>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+            <!-- Table with Alpine-driven modal. Alpine x-data is on tbody -->
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+              <thead class="bg-slate-50 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Account</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Platform</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Flagged Keywords</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Alerts</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
+                </tr>
+              </thead>
+
+              <!-- Alpine state for modal -->
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900/50" x-data="{ openModal: false, selectedUser: {} }">
+                <tr>
+                  <td @click="selectedUser = { account: '@user123', platform: 'Twitter', keywords: 'Cocaine, Heroin', alerts: '3', status: 'Active' }; openModal = true" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary">@user123</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Twitter</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Cocaine, Heroin</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">3</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm"><span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/50 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:text-green-300">Active</span></td>
+                </tr>
+
+                <tr>
+                  <td @click="selectedUser = { account: '@user456', platform: 'Instagram', keywords: 'Marijuana, Ecstasy', alerts: '2', status: 'Under Review' }; openModal = true" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary">@user456</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Instagram</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Marijuana, Ecstasy</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">2</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm"><span class="inline-flex items-center rounded-full bg-yellow-100 dark:bg-yellow-900/50 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:text-yellow-300">Under Review</span></td>
+                </tr>
+
+                <tr>
+                  <td @click="selectedUser = { account: '@user789', platform: 'Facebook', keywords: 'Methamphetamine', alerts: '1', status: 'Active' }; openModal = true" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary">@user789</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Facebook</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Methamphetamine</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">1</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm"><span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/50 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:text-green-300">Active</span></td>
+                </tr>
+
+                <tr>
+                  <td @click="selectedUser = { account: '@user101', platform: 'TikTok', keywords: 'Prescription Drugs', alerts: '4', status: 'Suspended' }; openModal = true" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary">@user101</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">TikTok</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Prescription Drugs</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">4</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm"><span class="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/50 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:text-red-300">Suspended</span></td>
+                </tr>
+
+                <tr>
+                  <td @click="selectedUser = { account: '@user112', platform: 'Snapchat', keywords: 'Synthetic Drugs', alerts: '2', status: 'Under Review' }; openModal = true" class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-primary">@user112</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Snapchat</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Synthetic Drugs</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">2</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm"><span class="inline-flex items-center rounded-full bg-yellow-100 dark:bg-yellow-900/50 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:text-yellow-300">Under Review</span></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Modal (Alpine) -->
+            <div x-data="{ openModal: false, selectedUser: {} }" x-show="openModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div @click.away="openModal = false" class="w-full max-w-2xl rounded-lg bg-white dark:bg-slate-800 shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 p-4">
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">Account Details</h3>
+                  <button @click="openModal = false" class="rounded-full p-1 text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+
+                <div class="p-6">
+                  <div class="flex items-start gap-4">
+                    <div :style="`background-image: url(https://i.pravatar.cc/150?u=${selectedUser.account});`" class="h-16 w-16 rounded-full bg-cover bg-center shrink-0"></div>
+                    <div class="flex-1">
+                      <h4 class="text-xl font-bold text-slate-900 dark:text-white" x-text="selectedUser.account"></h4>
+                      <p class="text-sm text-slate-500 dark:text-slate-400" x-text="selectedUser.platform"></p>
+                    </div>
+                    <span :class="{
+                      'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300': selectedUser.status === 'Active',
+                      'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300': selectedUser.status === 'Under Review',
+                      'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300': selectedUser.status === 'Suspended'
+                    }" class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium" x-text="selectedUser.status"></span>
+                  </div>
+
+                  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Flagged Keywords</h5>
+                      <div class="flex flex-wrap gap-2">
+                        <template x-for="keyword in (selectedUser.keywords || '').split(', ')" :key="keyword">
+                          <span class="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-1 text-xs font-medium text-slate-700 dark:text-slate-300" x-text="keyword"></span>
+                        </template>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Alerts</h5>
+                      <p class="text-3xl font-bold text-slate-900 dark:text-white" x-text="selectedUser.alerts"></p>
+                    </div>
+                  </div>
+
+                  <div class="mt-6">
+                    <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Recent Activity</h5>
+                    <ul class="space-y-3">
+                      <li class="flex items-center gap-3">
+                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span class="material-symbols-outlined text-primary text-base">chat_bubble</span>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Posted a new message with keyword "Cocaine". <span class="text-slate-400 dark:text-slate-500">- 2 hours ago</span></p>
+                      </li>
+                      <li class="flex items-center gap-3">
+                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span class="material-symbols-outlined text-primary text-base">person_add</span>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">Connected with 5 new suspicious accounts. <span class="text-slate-400 dark:text-slate-500">- 1 day ago</span></p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-3 border-t border-slate-200 dark:border-slate-700 p-4">
+                  <button @click="openModal = false" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-700">Cancel</button>
+                  <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700">Suspend Account</button>
+                </div>
+              </div>
+            </div>
+            <!-- End modal -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- AlpineJS for modal functionality -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  // keeps your existing setting
+  "codium.codeCompletion.enable": false,
+  "java.project.sourcePaths": ["src"],
+
+  // tell VS Code where to find external JAR libraries
+  "java.project.referencedLibraries": [
+    "lib/**/*.jar",
+    "C:/Users/lalit/OneDrive/Desktop/website/lib/jakarta.servlet-api-6.0.0.jar"
+  ]
+}
