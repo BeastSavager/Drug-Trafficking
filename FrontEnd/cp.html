@@ -151,66 +151,32 @@
             <!-- Feedback result / error area -->
             <div id="feedbackResult" class="text-sm mt-2"></div>
 
-            <script>
-              (function () {
-                // CHANGE THIS to your deployed backend URL (no trailing slash).
-                // Example for Render: 'https://feedback-api.onrender.com'
-                // For local testing keep 'http://localhost:3000'
-                const BACKEND_BASE = 'http://localhost:3000';
+           <script>
+              const BACKEND_BASE = 'http://localhost:3000'; // your running backend
 
-                const form = document.getElementById('feedbackForm');
-                const submitBtn = document.getElementById('submitBtn');
-                const resultDiv = document.getElementById('feedbackResult');
+              document.querySelector("form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                const name = document.querySelector("#name").value;
+                const email = document.querySelector("#email").value;
+                const feedback = document.querySelector("#feedback").value;
 
-                form.addEventListener('submit', async function (e) {
-                  e.preventDefault();
-                  resultDiv.textContent = '';
-                  submitBtn.disabled = true;
-                  const originalText = submitBtn.textContent;
-                  submitBtn.textContent = 'Submitting...';
-
-                  const payload = {
-                    name: document.getElementById('name').value.trim(),
-                    email: document.getElementById('email').value.trim(),
-                    feedback: document.getElementById('feedback').value.trim()
-                  };
-
-                  // basic client-side validation
-                  if (!payload.name || !payload.feedback) {
-                    resultDiv.textContent = 'Please enter your name and feedback.';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                    return;
-                  }
-
-                  try {
-                    const res = await fetch(BACKEND_BASE + '/api/feedback', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(payload)
-                    });
-
-                    if (!res.ok) {
-                      let errText = 'Server error';
-                      try { const errJson = await res.json(); errText = errJson.error || errText; } catch (e) {}
-                      throw new Error(errText);
-                    }
-
-                    const data = await res.json();
-                    resultDiv.className = 'text-sm mt-2 text-green-600 dark:text-green-400';
-                    resultDiv.textContent = 'Thanks — feedback submitted (id: ' + (data.id || 'N/A') + ')';
-                    form.reset();
-                  } catch (err) {
-                    console.error(err);
-                    resultDiv.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
-                    resultDiv.textContent = 'Failed to submit feedback: ' + (err.message || err);
-                  } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                  }
+                const response = await fetch(`${BACKEND_BASE}/api/feedback`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name, email, feedback })
                 });
-              })();
-            </script>
+
+                const result = await response.json();
+                if (response.ok) {
+                  alert("Feedback submitted successfully!");
+                  console.log(result);
+                } else {
+                  alert("Error submitting feedback!");
+                  console.error(result);
+                }
+              });
+              </script>
 
           </div>
         </div>
