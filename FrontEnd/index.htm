@@ -1,33 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Analyzer — ShadowNet</title>
+
+  <!-- reuse your Tailwind CDN + fonts from your Home page -->
   <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
-  <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Inter%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet" />
-  <title>Home</title>
-  <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
+  <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900" onload="this.rel='stylesheet'" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <style>
-    .tab {
-      cursor: pointer;
-      padding: 10px;
-      display: inline-block;
-      background: #eee;
-      transition: transform 0.2s, border-bottom 0.2s;
-    }
-    .tab.active {
-      background: #ccc;
-    }
-    .tab.hovered {
-      transform: scale(1.1);
-      border-bottom: 2px solid #0078d7;
-    }
-    #tab-content {
-      width: 100%;
-      height: 500px;
-      border: none;
-    }
-  </style>
+
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -37,84 +19,339 @@
             primary: "#0f66bd",
             "background-light": "#f6f7f8",
             "background-dark": "#101922",
+            panel: "#0b1620",
+            card: "#0f232b"
           },
           fontFamily: {
-            display: ["Inter"],
+            display: ["Inter", "system-ui", "sans-serif"],
           },
           borderRadius: {
-            DEFAULT: "0.25rem",
-            lg: "0.5rem",
-            xl: "0.75rem",
+            DEFAULT: "0.5rem",
+            lg: "0.75rem",
+            xl: "1rem",
             full: "9999px"
           },
         },
       },
     };
   </script>
+
+  <style>
+    /* small local styles to perfect the drag area and icons */
+    .dropzone {
+      transition: all .18s ease;
+      border-width: 1px;
+      border-style: dashed;
+    }
+    .dropzone.dragover {
+      box-shadow: 0 6px 30px rgba(15,102,189,0.12);
+      transform: translateY(-2px);
+      border-color: rgba(15,102,189,0.9);
+    }
+    .pdf-icon {
+      width:64px;height:80px;background:#1f2937;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#f97316;font-weight:700;
+    }
+    pre.json {
+      background:#031216;color:#9fe2ff;padding:12px;border-radius:8px;font-size:13px;overflow:auto;
+    }
+  </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display">
-  <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
-    <div class="flex h-full grow flex-col">
-      <header class="flex items-center justify-between whitespace-nowrap border-b border-black/10 dark:border-white/10 px-10 py-4">
-        <div class="flex items-center gap-4 text-white">
-          <svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path clip-rule="evenodd" d="M12 2L3 8.5V21H21V8.5L12 2ZM5 9.5L12 4L19 9.5V19H5V9.5Z" fill="currentColor" fill-rule="evenodd"></path>
-            <path d="M9 14H15V16H9V14Z" fill="currentColor"></path>
-          </svg>
-          <h2 class="text-lg font-bold tracking-tight text-black dark:text-white">ShadowNet</h2>
-        </div>
 
-        <nav class="hidden items-center gap-8 md:flex">
-          <a class="text-sm font-medium text-black/60 transition-colors hover:text-black/80 dark:text-white/60 dark:hover:text-white/80" href="../FrontEnd/index.htm">Home</a>
-          <a class="text-sm font-medium text-black/60 transition-colors hover:text-black/80 dark:text-white/60 dark:hover:text-white/80" href="../FrontEnd/DP1.html">Dashboard</a>
-          <a class="text-sm font-medium text-black/60 transition-colors hover:text-black/80 dark:text-white/60 dark:hover:text-white/80" href="../FrontEnd/cp.html">Contact</a>
-        </nav>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-200">
+  <!-- Header (same structure as your home) -->
+  <header class="flex items-center justify-between border-b border-black/10 dark:border-white/5 px-8 py-4">
+    <div class="flex items-center gap-4">
+      <svg class="h-7 w-7 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L3 8.5V21H21V8.5L12 2Z" fill="currentColor"/>
+      </svg>
+      <h1 class="text-lg font-bold dark:text-white">ShadowNet</h1>
 
-        <div class="flex items-center gap-4">
-          <button class="flex h-10 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-primary/90">
-            <span class="truncate">Login</span>
-          </button>
-        </div>
-      </header>
+      <nav class="hidden md:flex items-center gap-6 ml-6">
+        <a href="index.htm" class="text-sm text-slate-400 hover:text-slate-100">Home</a>
+        <a href="DP1.html" class="text-sm text-slate-400 hover:text-slate-100">Dashboard</a>
+        <a href="cp.html" class="text-sm text-slate-400 hover:text-slate-100">Contact</a>
+      </nav>
+    </div>
 
-      <main class="flex flex-1 items-center justify-center py-12 md:py-24">
-        <div class="container mx-auto px-4">
-          <div class="flex min-h-[500px] flex-col items-center justify-center rounded-xl bg-cover bg-center p-8 text-center" style='background-image: linear-gradient(rgba(16, 25, 34, 0.7), rgba(16, 25, 34, 0.9)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAvX4B5-B7ag056gYm7zkttXRbtXAo6Tl4LTt0O1ZfFGtx3lKoNGSoOaZYaK7TJAEHcRt4Qv8T6jBqQfjix1dpyM8jKtjYkJz2S9McEkiTn-DnN4M4NJXDHUpAa8PFqkPWYt5bayhxVuVBJCl62C8aN_h0nrTcG1I6Gf0k9S6C30_ADqBERGrBjqaK4UIi4aU41PEJbgaESut3Q4acoAQq5-7nvEb0yKkOMbQ7veS8Xiq9wmjJ-OWXdpQ46oXGpfJ5dBYy79ONKQuc");'>
-            <div class="flex max-w-3xl flex-col items-center gap-6">
-              <h1 class="text-4xl font-black tracking-tighter text-white sm:text-5xl md:text-6xl">Unmasking the Shadows</h1>
-              <p class="text-base text-white/80 md:text-lg">
-                Our mission is to combat the rise of drug trafficking on encrypted messaging platforms. We leverage advanced analytics to identify and expose individuals involved
-                in illicit activities, ensuring a safer digital environment for all.
-              </p>
-              <button class="mt-4 flex h-12 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-5 text-base font-bold text-white transition-colors hover:bg-primary/90">
-                <span class="truncate">Learn More</span>
-              </button>
+    <div class="flex items-center gap-4">
+      <button class="hidden sm:inline-flex items-center gap-2 bg-primary px-4 py-2 rounded-md text-white font-semibold">Login</button>
+      <div class="w-9 h-9 rounded-full bg-slate-600/20" title="profile"></div>
+    </div>
+  </header>
+
+  <!-- Page container -->
+  <main class="container mx-auto px-4 py-10">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: big analyzer card (spans 2 cols on large view) -->
+      <section class="lg:col-span-2 space-y-6">
+        <div class="rounded-xl bg-panel/70 border border-white/3 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-extrabold text-white">Account Analyzer</h2>
+            <small class="text-sm text-slate-400">Upload screenshot or PDF — detect username & platforms</small>
+          </div>
+
+          <!-- Upload / drag-drop -->
+          <div id="dropzone" class="dropzone rounded-lg border-slate-700 p-5 bg-card/60">
+            <label for="fileInput" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 cursor-pointer">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 flex items-center justify-center rounded-lg bg-slate-800/50 border border-white/3">
+                  <svg class="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="none"><path d="M12 3v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8.5 8.5L12 5l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+
+                <div>
+                  <div class="text-white font-semibold">Drag & drop or click to upload</div>
+                  <div class="text-sm text-slate-400">Accepts: JPG, JPEG, PNG, PDF — max 10 MB</div>
+                </div>
+              </div>
+
+              <div class="md:text-right">
+                <button type="button" id="chooseBtn" class="mt-2 md:mt-0 inline-flex items-center gap-2 bg-primary text-white font-semibold px-4 py-2 rounded-md shadow">Choose file</button>
+              </div>
+            </label>
+
+            <!-- real input (hidden) -->
+            <input id="fileInput" type="file" accept=".jpg,.jpeg,.png,.pdf" class="sr-only" />
+
+            <!-- preview area -->
+            <div id="previewArea" class="mt-4 hidden">
+              <div class="flex items-center gap-4">
+                <div id="thumbWrapper" class="w-24 h-20 rounded-md overflow-hidden bg-slate-900/30 flex items-center justify-center">
+                  <!-- image or pdf icon inserted here -->
+                </div>
+                <div>
+                  <div id="fileInfo" class="text-sm text-slate-100 font-medium"></div>
+                  <div id="fileMeta" class="text-xs text-slate-400 mt-1"></div>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                  <button id="removeFile" class="px-3 py-1 text-sm rounded-md bg-red-600/80 text-white">Remove</button>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- platform dropdown and username chatbox -->
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- platform select -->
+            <div class="col-span-1 md:col-span-1">
+              <label class="block text-sm text-slate-300 mb-2 font-semibold">Platform</label>
+              <select id="platformSelect" class="w-full rounded-md bg-slate-900/40 border border-white/5 px-3 py-2 text-white">
+                <option value="">Select platform...</option>
+                <option>Instagram</option>
+                <option>Snapchat</option>
+                <option>Telegram</option>
+                <option>Discord</option>
+                <option>WhatsApp</option>
+                <option>Signal</option>
+                <option>Facebook</option>
+                <option>Twitter / X</option>
+                <option>TikTok</option>
+              </select>
+            </div>
+
+            <!-- username chatbox (prefilled if extracted) -->
+            <div class="md:col-span-2">
+              <label class="block text-sm text-slate-300 mb-2 font-semibold">Detected username (edit if needed)</label>
+              <textarea id="usernameBox" rows="2" placeholder="@username or type here..." class="w-full rounded-md bg-slate-900/40 border border-white/5 px-3 py-2 text-white"></textarea>
+            </div>
+          </div>
+
+          <!-- analyze button -->
+          <div class="mt-6 flex items-center gap-4">
+            <button id="analyzeBtn" class="inline-flex items-center gap-3 bg-primary text-white font-bold px-5 py-2 rounded-lg shadow-lg">Analyze</button>
+            <button id="clearBtn" class="inline-flex items-center gap-2 bg-transparent border border-white/6 text-slate-300 px-4 py-2 rounded-lg">Clear</button>
+            <div id="status" class="text-sm text-slate-400 ml-3"></div>
+          </div>
+
+          <!-- results -->
+          <div class="mt-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-2">Keywords / JSON result</h3>
+            <pre id="jsonOutput" class="json">{ "info": "No analysis yet" }</pre>
+          </div>
         </div>
-      </main>
+      </section>
+
+      <!-- Right column: small cards / alerts -->
+      <aside class="space-y-4">
+        <div class="rounded-xl bg-panel/70 border border-white/3 p-4">
+          <h4 class="text-lg font-semibold text-white">Recent Alerts</h4>
+          <ul class="mt-3 space-y-3 text-sm text-slate-300">
+            <li class="p-3 rounded-md bg-gradient-to-r from-rose-900/20 to-transparent border-l-4 border-rose-500">New suspicious activity for <strong>@user101</strong> — <span class="text-slate-400">5m ago</span></li>
+            <li class="p-3 rounded-md bg-gradient-to-r from-yellow-900/10 to-transparent border-l-4 border-yellow-400">Account <strong>@user456</strong> flagged — <span class="text-slate-400">30m ago</span></li>
+          </ul>
+        </div>
+
+        <div class="rounded-xl bg-panel/70 border border-white/3 p-4">
+          <h4 class="text-lg font-semibold text-white">Upload Tips</h4>
+          <div class="text-sm text-slate-300 mt-2">
+            • Use a clear screenshot of the username area. <br />
+            • PDFs are supported (we extract from filename only in demo). <br />
+            • Connect this page to a server endpoint for OCR/real extraction.
+          </div>
+        </div>
+      </aside>
     </div>
-  </div>
+  </main>
 
+  <!-- Script: drag/drop, preview, simple username extraction, analyze -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Get the current page filename (e.g., "HP1.html")
-      const currentPage = window.location.pathname.split('/').pop();
-      // Select all navigation links in the header
-      const navLinks = document.querySelectorAll('header nav a');
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const chooseBtn = document.getElementById('chooseBtn');
+    const previewArea = document.getElementById('previewArea');
+    const thumbWrapper = document.getElementById('thumbWrapper');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileMeta = document.getElementById('fileMeta');
+    const removeFile = document.getElementById('removeFile');
+    const usernameBox = document.getElementById('usernameBox');
+    const platformSelect = document.getElementById('platformSelect');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const status = document.getElementById('status');
+    const clearBtn = document.getElementById('clearBtn');
 
-      navLinks.forEach(link => {
-        const linkPage = link.getAttribute('href');
-        // Check if the link's href matches the current page
-        if (linkPage === currentPage) {
-          // Remove default color classes
-          link.classList.remove('text-black/60', 'dark:text-white/60', 'hover:text-black/80', 'dark:hover:text-white/80');
-          // Add active color classes
-          link.classList.add('text-primary', 'dark:text-primary', 'font-bold');
-        }
+    // helper: human size
+    function niceBytes(bytes){
+      if(bytes < 1024) return bytes + ' B';
+      if(bytes < 1024*1024) return Math.round(bytes/1024) + ' KB';
+      return (bytes/(1024*1024)).toFixed(2) + ' MB';
+    }
+
+    // open file dialog when choose clicked
+    chooseBtn.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    // drag events
+    ;['dragenter','dragover'].forEach(ev => {
+      dropzone.addEventListener(ev, e => {
+        e.preventDefault(); e.stopPropagation();
+        dropzone.classList.add('dragover');
       });
     });
+    ;['dragleave','dragend','drop'].forEach(ev => {
+      dropzone.addEventListener(ev, e => {
+        e.preventDefault(); e.stopPropagation();
+        if(ev === 'drop'){
+          const dt = e.dataTransfer;
+          if(dt && dt.files && dt.files.length) handleFile(dt.files[0]);
+        }
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    fileInput.addEventListener('change', e => {
+      if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+    });
+
+    removeFile.addEventListener('click', () => {
+      fileInput.value = '';
+      previewArea.classList.add('hidden');
+      thumbWrapper.innerHTML = '';
+      fileInfo.textContent = '';
+      fileMeta.textContent = '';
+      usernameBox.value = '';
+      status.textContent = '';
+    });
+
+    function handleFile(file){
+      // check type & size (limit 10MB)
+      const allowed = ['image/jpeg','image/png','application/pdf','image/jpg'];
+      if(!allowed.includes(file.type)){
+        alert('Unsupported file type. Use JPG/PNG/PDF.');
+        return;
+      }
+      if(file.size > 10 * 1024 * 1024){
+        alert('File too large (>10MB).');
+        return;
+      }
+
+      previewArea.classList.remove('hidden');
+      fileInfo.textContent = file.name;
+      fileMeta.textContent = `${file.type || 'unknown'} • ${niceBytes(file.size)}`;
+
+      // preview: if image -> show thumbnail; if pdf -> show pdf icon
+      if(file.type.startsWith('image/')){
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        thumbWrapper.innerHTML = '';
+        thumbWrapper.appendChild(img);
+      } else {
+        // pdf icon
+        thumbWrapper.innerHTML = '<div class="pdf-icon">PDF</div>';
+      }
+
+      // Attempt simple username extraction from filename
+      tryAutoExtractUsername(file.name);
+    }
+
+    function tryAutoExtractUsername(filename){
+      // search for @username patterns
+      const atMatch = filename.match(/@([A-Za-z0-9._-]+)/);
+      if(atMatch){
+        usernameBox.value = '@' + atMatch[1];
+        return;
+      }
+      // otherwise search for patterns like user123 or username_xyz
+      const userMatch = filename.match(/(user|usr|acct|account)[-_]?([A-Za-z0-9]+)/i);
+      if(userMatch){
+        usernameBox.value = '@' + (userMatch[2] || userMatch[1]);
+        return;
+      }
+      // try to find any word that resembles a handle (letters + digits)
+      const token = filename.match(/([A-Za-z0-9]{4,})/);
+      if(token){
+        usernameBox.value = '@' + token[1];
+        return;
+      }
+      // else leave blank
+      usernameBox.value = '';
+    }
+
+    analyzeBtn.addEventListener('click', () => {
+      const username = usernameBox.value.trim();
+      const platform = platformSelect.value;
+      if(!platform){ alert('Please choose a platform'); return; }
+      if(!username){ if(!confirm('No username detected. Continue analysis?')) return; }
+
+      status.textContent = 'Analyzing — demo client-side...';
+      analyzeBtn.disabled = true;
+
+      // demo delay to mimic server processing or OCR
+      setTimeout(()=> {
+        // demo "keywords" extraction from username & platform
+        const tokens = [];
+        if(username){
+          // break into alpha tokens
+          username.replace(/[^A-Za-z0-9]+/g, ' ').split(/\s+/).forEach(t => { if(t) tokens.push(t.toLowerCase()); });
+        }
+        if(platform) tokens.push(platform.toLowerCase());
+        const result = {
+          username: username || null,
+          platform: platform,
+          filename: fileInput.files[0] ? fileInput.files[0].name : null,
+          keywords: Array.from(new Set(tokens)).slice(0,20),
+          confidence: Math.min(98, Math.max(20, tokens.length * 20)),
+          analyzedAt: new Date().toISOString()
+        };
+        jsonOutput.textContent = JSON.stringify(result, null, 2);
+        status.textContent = 'Done';
+        analyzeBtn.disabled = false;
+      }, 900);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      previewArea.classList.add('hidden');
+      thumbWrapper.innerHTML = '';
+      fileInfo.textContent = '';
+      fileMeta.textContent = '';
+      usernameBox.value = '';
+      jsonOutput.textContent = '{ "info": "No analysis yet" }';
+      status.textContent = '';
+      platformSelect.value = '';
+    });
   </script>
-  <script src="tabs.js"></script>
 </body>
 </html>
