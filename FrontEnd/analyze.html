@@ -3,30 +3,43 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Analyze Account — Drug Trafficking Tracker</title>
+  <title>Analyze Account — Drug Keyword Scanner</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
     body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    /* small helper to ensure the dropzone is clickable across browsers */
+    .clickable { cursor: pointer; }
   </style>
+
+  <!-- Tesseract.js -->
+  <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
-  <div class="max-w-5xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">Quick Account Analyzer</h1>
-    <p class="mb-6 text-sm text-slate-600 dark:text-slate-300">
-      Upload an image & select a platform/username. Click <strong>Analyze</strong> to extract quick keywords.
+<body class="bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-3">Screenshot Keyword Scanner</h1>
+    <p class="text-sm text-slate-600 dark:text-slate-300 mb-6">
+      Upload a screenshot (WhatsApp / Instagram / etc). The page will OCR the image, detect configured keywords, and save selected username + platform and matched keywords to Supabase.
     </p>
 
-    <form id="analyzeForm" class="space-y-6 bg-white dark:bg-slate-900 p-6 rounded-lg shadow">
-      <!-- IMAGE UPLOAD -->
-      <div>
-        <label class="block text-sm font-medium mb-2">Upload image</label>
-        <div id="dropZone" class="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 flex items-center gap-4">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+      <!-- Upload / Drop zone -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Upload screenshot</label>
+
+        <input id="imageInput" type="file" accept="image/*" class="sr-only" />
+        <div id="dropZone" tabindex="0" role="button"
+             aria-label="Upload image by clicking or drag-and-drop"
+             class="clickable border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 flex items-center gap-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           <div class="flex-1">
-            <input id="imageInput" name="image" type="file" accept="image/*" class="hidden"/>
-            <div id="dropText" class="text-sm text-slate-600 dark:text-slate-400">Drag & drop an image here, or <button type="button" id="pickFileBtn" class="text-primary underline">choose a file</button></div>
+            <div id="dropText" class="text-sm text-slate-600 dark:text-slate-400">
+              Click here or press Enter to choose a file, or drag & drop an image
+            </div>
             <div id="fileInfo" class="text-xs text-slate-500 mt-2"></div>
           </div>
+
           <div class="w-28 h-20 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex items-center justify-center">
             <img id="previewImg" alt="preview" class="max-h-full max-w-full hidden"/>
             <span id="previewPlaceholder" class="text-xs text-slate-400">No image</span>
@@ -34,32 +47,21 @@
         </div>
       </div>
 
-      <!-- PLATFORM SELECTION -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+      <!-- Platform & Username -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         <div>
           <label class="block text-sm font-medium mb-2">Platform</label>
-          <div class="flex gap-2 items-center">
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" id="platformInstagram" value="Instagram" class="form-checkbox"/>
-              <span class="text-sm">Instagram</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" id="platformSnapchat" value="Snapchat" class="form-checkbox"/>
-              <span class="text-sm">Snapchat</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" id="platformOtherCheck" value="Other" class="form-checkbox"/>
-              <span class="text-sm">Other</span>
-            </label>
+          <div class="flex gap-3">
+            <label class="inline-flex items-center gap-2"><input id="platformInstagram" type="checkbox" value="Instagram" class="form-checkbox"/><span class="text-sm">Instagram</span></label>
+            <label class="inline-flex items-center gap-2"><input id="platformWhatsapp" type="checkbox" value="WhatsApp" class="form-checkbox"/><span class="text-sm">WhatsApp</span></label>
+            <label class="inline-flex items-center gap-2"><input id="platformOtherCheck" type="checkbox" value="Other" class="form-checkbox"/><span class="text-sm">Other</span></label>
+          </div>
+
+          <div id="otherPlatformWrapper" class="mt-2 hidden">
+            <input id="platformOtherText" type="text" placeholder="e.g. Telegram" class="form-input block w-full rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-white dark:bg-slate-900"/>
           </div>
         </div>
 
-        <div id="otherPlatformWrapper" class="hidden">
-          <label class="block text-sm font-medium mb-2">Other platform</label>
-          <input id="platformOtherText" type="text" placeholder="e.g. Telegram" class="form-input block w-full rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-background-light dark:bg-background-dark"/>
-        </div>
-
-        <!-- USERNAME DROPDOWN + ADD -->
         <div>
           <label class="block text-sm font-medium mb-2">Username (select)</label>
           <div class="flex gap-2">
@@ -67,238 +69,64 @@
               <option value="">-- choose username --</option>
               <option value="@user123">@user123</option>
               <option value="@user456">@user456</option>
-              <option value="@user789">@user789</option>
-              <option value="@user101">@user101</option>
             </select>
-            <input id="newUsernameInput" type="text" placeholder="Add username" class="form-input rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-background-light dark:bg-background-dark" />
-            <button id="addUsernameBtn" type="button" class="px-3 py-2 bg-primary text-white rounded">Add</button>
           </div>
-          <p class="text-xs text-slate-400 mt-1">You can add usernames above — they become available in the dropdown.</p>
+          <p class="text-xs text-slate-400 mt-1">Or add one below</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">Add username</label>
+          <div class="flex gap-2">
+            <input id="newUsernameInput" type="text" placeholder="@example" class="form-input block w-full rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-white dark:bg-slate-900"/>
+            <button id="addUsernameBtn" type="button" class="px-3 py-2 bg-indigo-600 text-white rounded">Add</button>
+          </div>
         </div>
       </div>
 
-      <!-- ANALYZE BUTTON -->
       <div class="flex items-center gap-3">
-        <button id="analyzeBtn" type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90">
+        <button id="analyzeBtn" type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded">
           <svg id="spinner" class="animate-spin hidden h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none"/><path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
           <span>Analyze</span>
         </button>
 
-        <button id="downloadBtn" type="button" class="px-3 py-2 border rounded text-sm hidden">Download result</button>
+        <button id="clearBtn" type="button" class="px-3 py-2 border rounded text-sm">Clear</button>
+
         <div id="status" class="text-sm text-slate-500"></div>
       </div>
-    </form>
+    </div>
 
-    <!-- RESULTS -->
-    <section id="results" class="mt-6 hidden">
-      <h2 class="text-lg font-semibold mb-2">Extracted Keywords</h2>
-      <div id="keywordTags" class="flex flex-wrap gap-2 mb-4"></div>
+    <!-- Results area -->
+    <div id="results" class="mt-6 hidden">
+      <div class="bg-white dark:bg-slate-800 p-4 rounded shadow">
+        <h2 class="font-semibold mb-2">Detected Keywords</h2>
+        <div id="keywordTags" class="flex flex-wrap gap-2 mb-3"></div>
 
-      <h3 class="text-sm font-medium mb-2">Result (JSON)</h3>
-      <pre id="jsonResult" class="rounded bg-slate-50 dark:bg-slate-800 p-4 text-xs overflow-auto"></pre>
-    </section>
+        <h3 class="text-sm font-medium">Analysis JSON</h3>
+        <pre id="jsonResult" class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded overflow-auto"></pre>
+      </div>
+    </div>
+
+    <!-- Saved rows -->
+    <div id="savedRows" class="mt-6 hidden">
+      <div class="bg-white dark:bg-slate-800 p-4 rounded shadow">
+        <h2 class="font-semibold mb-3">Saved Analyses (Supabase)</h2>
+        <div class="overflow-auto text-xs">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left"><th class="pr-4">When</th><th class="pr-4">Username</th><th class="pr-4">Platforms</th><th class="pr-4">Keywords</th><th class="pr-4">Types</th></tr>
+            </thead>
+            <tbody id="rowsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 <script>
 (() => {
-  // If you have a backend API, set it here (e.g. 'https://api.example.com/analyze').
-  // If left empty or null, the page uses a demo local analysis function.
-  const ANALYZE_ENDPOINT = null; // e.g. 'https://my-backend.example.com/api/analyze'
-
-  // Elements
-  const imageInput = document.getElementById('imageInput');
-  const pickFileBtn = document.getElementById('pickFileBtn');
-  const dropZone = document.getElementById('dropZone');
-  const previewImg = document.getElementById('previewImg');
-  const previewPlaceholder = document.getElementById('previewPlaceholder');
-  const fileInfo = document.getElementById('fileInfo');
-  const platformOtherCheck = document.getElementById('platformOtherCheck');
-  const otherPlatformWrapper = document.getElementById('otherPlatformWrapper');
-  const newUsernameInput = document.getElementById('newUsernameInput');
-  const addUsernameBtn = document.getElementById('addUsernameBtn');
-  const usernameSelect = document.getElementById('usernameSelect');
-  const analyzeBtn = document.getElementById('analyzeBtn');
-  const spinner = document.getElementById('spinner');
-  const resultsSection = document.getElementById('results');
-  const keywordTags = document.getElementById('keywordTags');
-  const jsonResult = document.getElementById('jsonResult');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const statusDiv = document.getElementById('status');
-
-  // Drag & drop
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('ring-2', 'ring-primary/40'); });
-  dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('ring-2','ring-primary/40'); });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault(); dropZone.classList.remove('ring-2','ring-primary/40');
-    const f = e.dataTransfer.files?.[0];
-    if (f) setFile(f);
-  });
-
-  pickFileBtn.addEventListener('click', () => imageInput.click());
-  imageInput.addEventListener('change', (e) => {
-    const f = e.target.files?.[0];
-    if (f) setFile(f);
-  });
-
-  function setFile(file) {
-    // preview
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      previewImg.src = ev.target.result;
-      previewImg.classList.remove('hidden');
-      previewPlaceholder.classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-    fileInfo.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
-    imageInput._file = file; // store file on element
-  }
-
-  // Show/hide other platform text
-  platformOtherCheck.addEventListener('change', () => {
-    otherPlatformWrapper.classList.toggle('hidden', !platformOtherCheck.checked);
-  });
-
-  // Add username to dropdown
-  addUsernameBtn.addEventListener('click', () => {
-    const v = newUsernameInput.value.trim();
-    if (!v) return alert('Enter a username to add (e.g. @someone)');
-    // avoid duplicates
-    for (const opt of usernameSelect.options) {
-      if (opt.value.toLowerCase() === v.toLowerCase()) {
-        usernameSelect.value = opt.value;
-        newUsernameInput.value = '';
-        return;
-      }
-    }
-    const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
-    usernameSelect.appendChild(opt);
-    usernameSelect.value = v;
-    newUsernameInput.value = '';
-  });
-
-  // Analyze click
-  analyzeBtn.addEventListener('click', async () => {
-    // gather data
-    const selectedUsername = usernameSelect.value?.trim();
-    const platforms = [];
-    if (document.getElementById('platformInstagram').checked) platforms.push('Instagram');
-    if (document.getElementById('platformSnapchat').checked) platforms.push('Snapchat');
-    if (platformOtherCheck.checked) {
-      const other = document.getElementById('platformOtherText').value.trim();
-      if (other) platforms.push(other);
-      else platforms.push('Other');
-    }
-    const file = imageInput._file || null;
-
-    // simple validation
-    if (!selectedUsername) {
-      alert('Please select or add a username first.');
-      return;
-    }
-    if (!file) {
-      if (!confirm('No image selected. Continue analysis with username only?')) return;
-    }
-
-    // UX: show spinner
-    spinner.classList.remove('hidden');
-    statusDiv.textContent = 'Analyzing...';
-
-    try {
-      let result;
-      if (ANALYZE_ENDPOINT) {
-        // send to real backend (uncomment / configure ANALYZE_ENDPOINT)
-        const form = new FormData();
-        form.append('username', selectedUsername);
-        form.append('platforms', JSON.stringify(platforms));
-        if (file) form.append('image', file);
-        const res = await fetch(ANALYZE_ENDPOINT, { method: 'POST', body: form });
-        if (!res.ok) throw new Error('Server returned ' + res.status);
-        result = await res.json();
-      } else {
-        // Demo local analysis (no server)
-        result = demoAnalyze({ username: selectedUsername, platforms, filename: file?.name || null });
-      }
-
-      // show results
-      showResult(result);
-      statusDiv.textContent = 'Done';
-      downloadBtn.classList.remove('hidden');
-    } catch (err) {
-      console.error(err);
-      statusDiv.textContent = 'Failed: ' + (err.message || err);
-      alert('Analysis failed: ' + (err.message || err));
-    } finally {
-      spinner.classList.add('hidden');
-    }
-  });
-
-  // Demo analyzer: heuristic keywords extraction
-  function demoAnalyze({ username, platforms, filename }) {
-    const clean = (s) => (s || '').replace(/^@/, '').replace(/[^A-Za-z0-9_\.]/g, ' ').trim();
-    const tokens = new Set();
-
-    // username tokens
-    const uname = clean(username);
-    uname.split(/[\._\sA-Z]+|(?=[A-Z])/).forEach(t => {
-      if (t && t.length >= 2) tokens.add(t.toLowerCase());
-    });
-    // numeric parts
-    const nums = (username.match(/\d+/g) || []);
-    nums.forEach(n => tokens.add(n));
-
-    // platform tokens
-    platforms.forEach(p => tokens.add(p.toLowerCase()));
-
-    // filename tokens
-    if (filename) {
-      const name = filename.split('/').pop().split('.')[0];
-      name.split(/[^A-Za-z0-9]+/).forEach(t => { if (t.length >= 2) tokens.add(t.toLowerCase()); });
-      const ext = filename.split('.').pop();
-      if (ext) tokens.add(ext.toLowerCase());
-    }
-
-    // heuristics: if username contains words like "shop", "rx", "drugs", suggest strong keywords
-    const heuristics = ['shop','sell','drugs','rx','meds','fast','deal','prescription','contact'];
-    heuristics.forEach(h => {
-      if (uname.toLowerCase().includes(h)) tokens.add(h);
-    });
-
-    const keywords = Array.from(tokens).slice(0, 20);
-    const score = Math.min(100, Math.max(10, keywords.length * 12)); // demo score
-    return {
-      username,
-      platforms,
-      filename,
-      keywords,
-      score,
-      timestamp: new Date().toISOString()
-    };
-  }
-
-  function showResult(result) {
-    // show tags
-    keywordTags.innerHTML = '';
-    for (const k of (result.keywords || [])) {
-      const el = document.createElement('span');
-      el.className = 'px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs text-slate-700 dark:text-slate-200';
-      el.textContent = k;
-      keywordTags.appendChild(el);
-    }
-
-    // json
-    jsonResult.textContent = JSON.stringify(result, null, 2);
-    resultsSection.classList.remove('hidden');
-
-    // download button
-    downloadBtn.onclick = () => {
-      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = (result.username || 'result') + '-analysis.json';
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    };
-  }
-
-})();
-</script>
-</body>
-</html>
+  /* ---------- CONFIG (edit these if needed) ---------- */
+  const SUPABASE_URL = 'https://zjhbhneyvvjzxsexdgod.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqaGJobmV5dnZqenhzZXhkZ29kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0OTU0MjgsImV4cCI6MjA3NzA3MTQyOH0.C0A_VvNrqm_dZcxh2mlWk6mO6t1jkF9YC3h9ycFJp8c';
+  /* ---------- KEYWORD_MAP: edit/add/remove keywords here ---------- */
+  // Keys are matched (lowercased) against OCR tokens; values ar
