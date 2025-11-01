@@ -250,6 +250,7 @@
 </div>
 
 <!-- Script: populate table from Supabase & handle modal -->
+<!-- Script: populate table from Supabase & handle modal (REPLACE EXISTING SCRIPT WITH THIS) -->
 <script>
 (async () => {
   // CONFIG - replace with your Supabase URL & anon key if different
@@ -257,14 +258,26 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqaGJobmV5dnZqenhzZXhkZ29kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0OTU0MjgsImV4cCI6MjA3NzA3MTQyOH0.C0A_VvNrqm_dZcxh2mlWk6mO6t1jkF9YC3h9ycFJp8c';
   const ROW_LIMIT = 200;
 
-  if (typeof supabaseJs === 'undefined') {
-    console.error('Supabase library missing. Add supabase-js to the page head.');
+  // Accept either UMD global name: supabaseJs or supabase
+  const supabaseGlobal = window.supabaseJs || window.supabase;
+  if (!supabaseGlobal) {
+    console.error('Supabase library missing. Add the CDN script to the <head>: https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js');
     const rowsBody = document.getElementById('rowsBody');
-    rowsBody.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-red-500">Error: Supabase library not found.</td></tr>';
+    if (rowsBody) rowsBody.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-red-500">Error: Supabase library not found.</td></tr>';
     return;
   }
 
-  const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // create client using whichever global is present
+  const supabase = supabaseGlobal.createClient
+    ? supabaseGlobal.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : (supabaseGlobal.supabase ? supabaseGlobal.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null);
+
+  if (!supabase) {
+    console.error('Could not construct Supabase client from global variable. Inspect window.supabaseJs and window.supabase in console.');
+    const rowsBody = document.getElementById('rowsBody');
+    if (rowsBody) rowsBody.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-red-500">Error: Could not initialize Supabase client.</td></tr>';
+    return;
+  }
 
   const rowsBody = document.getElementById('rowsBody');
   const modal = document.getElementById('accountModal');
@@ -286,6 +299,7 @@
 
   // Load rows
   async function loadRows(){
+    if (!rowsBody) return;
     rowsBody.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">Loading…</td></tr>';
     try {
       const { data, error } = await supabase
@@ -337,7 +351,7 @@
     modalAccountName.textContent = r.username || '';
     modalPlatform.textContent = r.platform || '';
     // avatar: use a placeholder generator with username
-    modalAvatar.style.backgroundImage = `url('https://i.pravatar.cc/150?u=${encodeURIComponent(r.username)}')`;
+    try { modalAvatar.style.backgroundImage = `url('https://i.pravatar.cc/150?u=${encodeURIComponent(r.username)}')`; } catch(e){}
     // keywords badges
     modalKeywords.innerHTML = '';
     const keywordsArr = Array.isArray(r.detected_keywords) ? r.detected_keywords : (r.detected_keywords ? String(r.detected_keywords).split(',').map(s=>s.trim()) : []);
@@ -362,25 +376,28 @@
       : 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300';
 
     // show modal
-    modal.classList.remove('hidden');
+    if (modal) modal.classList.remove('hidden');
     // focus first button for accessibility
-    modalCloseBtn.focus();
+    if (modalCloseBtn) modalCloseBtn.focus();
   }
 
   // modal close handlers
-  function closeModal(){ document.getElementById('accountModal').classList.add('hidden'); }
-  modalCloseBtn.addEventListener('click', closeModal);
-  modalCancelBtn.addEventListener('click', closeModal);
+  function closeModal(){ const m = document.getElementById('accountModal'); if (m) m.classList.add('hidden'); }
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+  if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeModal);
   // suspend button: you can customize to call an API / mark suspended in DB
-  modalSuspendBtn.addEventListener('click', async () => {
-    // Example: mark suspended locally and close modal (implement server-side update if needed)
+  if (modalSuspendBtn) modalSuspendBtn.addEventListener('click', async () => {
     alert('Suspend action triggered (implement server-side update if desired).');
     closeModal();
   });
 
-  // click outside modal to close
-  document.getElementById('accountModalDialog').addEventListener('click', (e)=> e.stopPropagation());
-  document.getElementById('accountModal').addEventListener('click', closeModal);
+  // click outside modal to close (safely)
+  const dialog = document.getElementById('accountModalDialog');
+  const accountModal = document.getElementById('accountModal');
+  if (dialog && accountModal) {
+    dialog.addEventListener('click', (e)=> e.stopPropagation());
+    accountModal.addEventListener('click', closeModal);
+  }
 
   // initial load
   await loadRows();
@@ -389,7 +406,8 @@
   window.reloadAnalyses = loadRows;
 })();
 </script>
-<!-- ========== END: Dynamic table + JS modal ========== -->
+<!-- END replacement script -->
+
 
 
 </body>
