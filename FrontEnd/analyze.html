@@ -5,31 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Screenshot Scanner</title>
 
-  <!-- Tailwind CDN (dev friendly). Replace with built CSS in production. -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style> body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; } </style>
 
-  <style>
-    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; }
-    .clickable { cursor: pointer; }
-    #debug { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco; font-size:12px; color:#94a3b8; margin-top:8px; }
-  </style>
-
-  <!-- Tesseract.js (OCR) -->
+  <!-- Use Tesseract UMD (we will gracefully fall back if worker API differs) -->
   <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
-  <!-- Supabase UMD (exposes either window.supabaseJs or window.supabase) -->
+  <!-- Supabase UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body class="bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
   <div class="max-w-3xl mx-auto p-6">
     <h1 class="text-2xl font-bold mb-2">Screenshot Scanner</h1>
-    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Upload screenshot → choose platform → type username shown in the screenshot → Analyze.</p>
+    <p class="text-sm mb-4">Upload screenshot → choose platform → type username shown in the screenshot → Analyze.</p>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow mb-6">
+    <div class="bg-white p-6 rounded shadow mb-4">
       <label class="block text-sm font-medium mb-2">Upload screenshot</label>
-
       <div class="flex items-center gap-3 mb-3">
         <input id="visibleFileInput" type="file" accept="image/*" />
         <button id="openChooserBtn" class="px-3 py-2 bg-indigo-600 text-white rounded">Open file chooser</button>
@@ -41,62 +32,41 @@
           <img id="previewImg" alt="preview" style="max-width:100%;max-height:100%;display:none"/>
           <span id="previewPlaceholder" style="color:#94a3b8">No image</span>
         </div>
-        <div>
-          <div id="fileInfo" class="text-xs text-slate-500"></div>
-        </div>
+        <div><div id="fileInfo" class="text-xs text-slate-500"></div></div>
       </div>
 
       <label class="block text-sm font-medium mb-2">Platform</label>
       <select id="platformSelect" class="form-select block w-full rounded border-slate-300 py-2 px-3 mb-3">
         <option value="">-- choose platform --</option>
-        <option>Instagram</option>
-        <option>WhatsApp</option>
-        <option>Signal</option>
-        <option>Facebook</option>
-        <option>Telegram</option>
-        <option>Snapchat</option>
-        <option>TikTok</option>
-        <option>Other</option>
+        <option>Instagram</option><option>WhatsApp</option><option>Signal</option><option>Facebook</option>
       </select>
 
       <label class="block text-sm font-medium mb-2">Username shown in the screenshot</label>
-      <input id="usernameInput" type="text" placeholder="@username or phone" class="form-input block w-full rounded border-slate-300 py-2 px-3 mb-4"/>
+      <input id="usernameInput" type="text" placeholder="@username" class="form-input block w-full rounded border-slate-300 py-2 px-3 mb-4"/>
 
       <div class="flex items-center gap-3">
-        <button id="analyzeBtn" class="px-4 py-2 bg-indigo-600 text-white rounded inline-flex items-center gap-2">
-          <svg id="spinner" class="animate-spin hidden h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none"/><path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-          <span>Analyze</span>
-        </button>
+        <button id="analyzeBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">Analyze</button>
         <div id="status" class="text-sm text-slate-500"></div>
       </div>
     </div>
 
-    <div id="report" class="hidden bg-white dark:bg-slate-800 p-4 rounded shadow mb-4">
+    <div id="report" class="hidden bg-white p-4 rounded shadow mb-4">
       <h2 class="font-semibold mb-2">Analysis Report</h2>
-      <div id="reportContent" class="text-sm text-slate-700 dark:text-slate-200"></div>
-      <pre id="jsonResult" class="mt-3 text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded overflow-auto"></pre>
+      <div id="reportContent"></div>
+      <pre id="jsonResult" class="mt-3 text-xs bg-slate-50 p-3 rounded overflow-auto"></pre>
     </div>
 
-    <div id="debug"></div>
+    <div id="debug" style="white-space:pre-wrap;font-family:monospace;font-size:12px;color:#334155"></div>
   </div>
 
 <script>
-/* ---------- CONFIG ---------- */
+/* CONFIG */
 const SUPABASE_URL = 'https://zjhbhneyvvjzxsexdgod.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqaGJobmV5dnZqenhzZXhkZ29kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0OTU0MjgsImV4cCI6MjA3NzA3MTQyOH0.C0A_VvNrqm_dZcxh2mlWk6mO6t1jkF9YC3h9ycFJp8c';
-const KEYWORD_MAP = {
-  'fentanyl':'opioid','fenta':'opioid','oxy':'opioid','oxycodone':'opioid','heroin':'opioid',
-  'xanax':'benzo','alprazolam':'benzo','klonopin':'benzo','clonazepam':'benzo',
-  'meth':'stimulant','methamphetamine':'stimulant','cocaine':'stimulant','mdma':'stimulant',
-  'weed':'cannabis','marijuana':'cannabis','ganja':'cannabis',
-  'pill':'pill','pills':'pill','tablet':'pill','script':'prescription','prescription':'prescription',
-  'plug':'slang','sell':'activity','selling':'activity','deal':'activity'
-};
+const KEYWORD_MAP = {'fentanyl':'opioid','xanax':'benzo','meth':'stimulant','cocaine':'stimulant','weed':'cannabis','pill':'pill'};
+/* end config */
 
-/* ---------- END CONFIG ---------- */
-
-(function(){
-  // elements
+(async function(){
   const visibleFileInput = document.getElementById('visibleFileInput');
   const openChooserBtn = document.getElementById('openChooserBtn');
   const clearBtn = document.getElementById('clearBtn');
@@ -104,8 +74,7 @@ const KEYWORD_MAP = {
   const previewPlaceholder = document.getElementById('previewPlaceholder');
   const fileInfo = document.getElementById('fileInfo');
   const analyzeBtn = document.getElementById('analyzeBtn');
-  const spinner = document.getElementById('spinner');
-  const status = document.getElementById('status');
+  const statusEl = document.getElementById('status');
   const report = document.getElementById('report');
   const reportContent = document.getElementById('reportContent');
   const jsonResult = document.getElementById('jsonResult');
@@ -113,157 +82,121 @@ const KEYWORD_MAP = {
   const platformSelect = document.getElementById('platformSelect');
   const debug = document.getElementById('debug');
 
-  function log(msg){
-    const t = new Date().toLocaleTimeString();
-    if(debug) debug.textContent = `[${t}] ${msg}\n` + debug.textContent;
-    console.log('[analyze] ' + msg);
-  }
+  function log(msg){ const t=new Date().toLocaleTimeString(); debug.textContent = `[${t}] ${msg}\n` + debug.textContent; console.log('[analyze] '+msg); }
 
-  // supabase global: accept either supabaseJs or supabase
+  // supabase client from UMD global (accept supabaseJs or supabase)
   const supGlobal = window.supabaseJs || window.supabase || null;
   let supabaseClient = null;
   try {
-    if (supGlobal && typeof supGlobal.createClient === 'function') {
-      supabaseClient = supGlobal.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else if (supGlobal && supGlobal.supabase && typeof supGlobal.supabase.createClient === 'function') {
-      supabaseClient = supGlobal.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else {
-      // if library not present, supabaseClient remains null
-    }
-  } catch (e) {
-    log('Supabase client init error: ' + (e && e.message));
-  }
+    if (supGlobal && typeof supGlobal.createClient === 'function') supabaseClient = supGlobal.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    else if (supGlobal && supGlobal.supabase && typeof supGlobal.supabase.createClient === 'function') supabaseClient = supGlobal.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch(e){ log('Supabase init error: '+e.message); }
 
-  // helpers
-  function escapeHtml(s){ if (s==null) return ''; return String(s).replace(/[&<>"'`]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[m])); }
-  function readFileAsDataURL(file){ return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
-  function tokenize(text){ if(!text) return []; const cleaned = text.toLowerCase().replace(/[“”"«»(),:;\/\\\[\]\{\}\*<>?+=|~`…—–]/g,' '); return cleaned.split(/\s+/).filter(Boolean); }
+  function readFileAsDataURL(file){ return new Promise((res, rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
+  function tokenize(text){ if(!text) return []; const cleaned=text.toLowerCase().replace(/[“”"«»(),:;\/\\\[\]\{\}\*<>?+=|~`…—–]/g,' '); return cleaned.split(/\s+/).filter(Boolean); }
+  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"'`]/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[m])); }
+
+  openChooserBtn.addEventListener('click', ()=> visibleFileInput.click());
+  visibleFileInput.addEventListener('change', (e)=> { const f=e.target.files && e.target.files[0]; setFile(f); });
+  clearBtn.addEventListener('click', ()=> { previewImg.src=''; previewImg.style.display='none'; previewPlaceholder.style.display='block'; fileInfo.textContent=''; visibleFileInput._file=null; report.classList.add('hidden'); jsonResult.textContent=''; reportContent.innerHTML=''; log('Cleared UI'); });
 
   function setFile(file){
     if(!file) return;
-    if(!/^image\//.test(file.type)){ alert('Please upload an image file'); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      previewImg.src = ev.target.result;
-      previewImg.style.display = 'block';
-      previewPlaceholder.style.display = 'none';
-      log('Preview loaded for ' + file.name);
-    };
-    reader.readAsDataURL(file);
+    if(!/^image\//.test(file.type)){ alert('Please upload an image'); return; }
+    readFileAsDataURL(file).then(data => { previewImg.src=data; previewImg.style.display='block'; previewPlaceholder.style.display='none'; }).catch(()=>{});
     fileInfo.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
     visibleFileInput._file = file;
+    log('File set: ' + file.name);
   }
 
-  // events
-  openChooserBtn.addEventListener('click', ()=> visibleFileInput.click());
-  visibleFileInput.addEventListener('change', (e)=> { const f = e.target.files && e.target.files[0]; setFile(f); });
-  clearBtn.addEventListener('click', ()=> { previewImg.src=''; previewImg.style.display='none'; previewPlaceholder.style.display='block'; fileInfo.textContent=''; visibleFileInput._file=null; report.classList.add('hidden'); jsonResult.textContent=''; reportContent.innerHTML=''; log('Cleared UI'); });
+  // Robust OCR: try worker, fallback to recognize()
+  async function doOCR(file){
+    const imgData = await readFileAsDataURL(file);
+    const logger = m => { if(m && m.status && typeof m.progress === 'number'){ statusEl.textContent = `OCR: ${m.status} ${(m.progress*100).toFixed(0)}%`; log('Tesseract: '+m.status+' '+(m.progress*100).toFixed(0)+'%'); } else if(m && m.status){ log('Tesseract: '+m.status); } };
+    // prefer worker if available and behaves as expected
+    try {
+      if (typeof Tesseract !== 'undefined' && typeof Tesseract.createWorker === 'function') {
+        const maybeWorker = Tesseract.createWorker ? Tesseract.createWorker({ logger }) : null;
+        if (maybeWorker && typeof maybeWorker.load === 'function') {
+          const worker = maybeWorker;
+          await worker.load();
+          await worker.loadLanguage('eng');
+          await worker.initialize('eng');
+          log('Worker initialized');
+          const { data: { text } } = await worker.recognize(imgData);
+          await worker.terminate();
+          log('Worker OCR done');
+          return text || '';
+        } else {
+          log('createWorker returned object without load(); falling back to Tesseract.recognize()');
+        }
+      }
+      // fallback path
+      if (typeof Tesseract !== 'undefined' && typeof Tesseract.recognize === 'function') {
+        const res = await Tesseract.recognize(imgData, 'eng', { logger });
+        log('recognize() finished');
+        return (res && res.data && res.data.text) ? res.data.text : '';
+      }
+      throw new Error('Tesseract APIs unavailable');
+    } catch (err) {
+      log('OCR exception: ' + (err && err.message ? err.message : String(err)));
+      throw err;
+    }
+  }
 
-  analyzeBtn.addEventListener('click', async () => {
+  analyzeBtn.addEventListener('click', async ()=>{
     const username = (usernameInput.value||'').trim();
     const platform = (platformSelect.value||'').trim();
     const file = visibleFileInput._file || null;
+    if(!platform){ alert('Select platform'); return; }
+    if(!username){ alert('Enter username'); return; }
 
-    if (!platform) { alert('Select a platform'); return; }
-    if (!username) { alert('Type the username found in the screenshot'); return; }
-
-    spinner.classList.remove('hidden');
-    status.textContent = 'Analyzing...';
-    log('Starting analysis for ' + username + ' on ' + platform + ' (file present: ' + Boolean(file) + ')');
+    statusEl.textContent = 'Analyzing...';
+    log('Analyze started: ' + username + ' on ' + platform + ' file present: ' + Boolean(file));
 
     try {
       let ocrText = '';
-      if (file) {
-        if (typeof Tesseract === 'undefined' || !Tesseract.createWorker) {
-          throw new Error('Tesseract not loaded or createWorker missing');
-        }
-        const { createWorker } = Tesseract;
-        const worker = createWorker({
-          logger: m => {
-            if (m && m.status && typeof m.progress === 'number') {
-              status.textContent = `OCR: ${m.status} ${(m.progress*100).toFixed(0)}%`;
-            }
-          }
-        });
-        await worker.load();
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng');
-        const imgData = await readFileAsDataURL(file);
-        const { data } = await worker.recognize(imgData);
-        ocrText = data && data.text ? data.text : '';
-        await worker.terminate();
-        log('OCR complete, characters: ' + (ocrText.length));
+      if(file){
+        ocrText = await doOCR(file);
+        log('OCR got ' + (ocrText ? ocrText.length : 0) + ' chars');
       } else {
-        log('No file provided — skipping OCR.');
+        log('No file provided; skipping OCR');
       }
 
-      // match keywords
       const tokens = tokenize(ocrText);
-      const tokensFiltered = tokens.filter(t => !t.startsWith('@') && !/^https?:/.test(t) && t.length >= 2);
-
-      const matched = new Set();
-      const matchedTypes = new Set();
+      const tokensFiltered = tokens.filter(t => !t.startsWith('@') && !/^https?:/.test(t) && t.length>=2);
+      const matched = new Set(); const matchedTypes = new Set();
       for (const t of tokensFiltered) {
         for (const kw in KEYWORD_MAP) {
-          if (t === kw || t.includes(kw) || kw.includes(t)) {
-            matched.add(kw);
-            matchedTypes.add(KEYWORD_MAP[kw]);
-          }
+          if (t === kw || t.includes(kw) || kw.includes(t)) { matched.add(kw); matchedTypes.add(KEYWORD_MAP[kw]); }
         }
       }
-
       const detectedKeywords = Array.from(matched);
       const detectedTypes = Array.from(matchedTypes);
       const score = Math.min(100, Math.max(0, detectedKeywords.length * 25));
 
-      const result = {
-        username, platform, detectedKeywords, detectedTypes, score, timestamp: new Date().toISOString()
-      };
-
-      // show report
-      reportContent.innerHTML = `
-        <div><strong>Username:</strong> ${escapeHtml(username)}</div>
-        <div><strong>Platform:</strong> ${escapeHtml(platform)}</div>
-        <div><strong>Detected keywords:</strong> ${escapeHtml(detectedKeywords.join(', ') || '—')}</div>
-        <div><strong>Detected types:</strong> ${escapeHtml(detectedTypes.join(', ') || '—')}</div>
-        <div><strong>Score:</strong> ${score}</div>
-      `;
+      const result = { username, platform, detectedKeywords, detectedTypes, score, timestamp: new Date().toISOString() };
+      reportContent.innerHTML = `<div><strong>Username:</strong> ${escapeHtml(username)}</div><div><strong>Platform:</strong> ${escapeHtml(platform)}</div><div><strong>Keywords:</strong> ${escapeHtml(detectedKeywords.join(', ')||'—')}</div><div><strong>Types:</strong> ${escapeHtml(detectedTypes.join(', ')||'—')}</div><div><strong>Score:</strong> ${score}</div>`;
       jsonResult.textContent = JSON.stringify(result, null, 2);
       report.classList.remove('hidden');
+      statusEl.textContent = 'Saving...';
 
-      // save to supabase if available
       if (supabaseClient) {
-        status.textContent = 'Saving to database...';
-        const insertPayload = {
-          username: result.username,
-          platform: result.platform,
-          detected_keywords: result.detectedKeywords,
-          detected_drug_types: result.detectedTypes,
-          score: result.score
-        };
-        const { error } = await supabaseClient.from('analyses').insert([insertPayload]);
-        if (error) {
-          log('Supabase insert error: ' + (error.message || JSON.stringify(error)));
-          status.textContent = 'Save failed';
-        } else {
-          status.textContent = 'Saved';
-          log('Saved to Supabase');
-        }
+        const payload = { username: result.username, platform: result.platform, detected_keywords: result.detectedKeywords, detected_drug_types: result.detectedTypes, score: result.score };
+        const { error } = await supabaseClient.from('analyses').insert([payload]);
+        if (error) { log('Supabase insert error: '+(error.message||JSON.stringify(error))); statusEl.textContent='Save failed'; } else { statusEl.textContent='Saved'; log('Saved to Supabase'); }
       } else {
-        log('Supabase client not available — skipping DB save.');
-        status.textContent = 'Done (not saved)';
+        log('Supabase client not available; skipping save');
+        statusEl.textContent='Done (not saved)';
       }
     } catch (err) {
-      log('Analysis error: ' + (err && err.message ? err.message : String(err)));
+      log('Analysis failed: ' + (err && err.message ? err.message : String(err)));
       alert('Analysis failed: ' + (err && err.message ? err.message : String(err)));
-      status.textContent = 'Failed';
-    } finally {
-      spinner.classList.add('hidden');
+      statusEl.textContent = 'Failed';
     }
   });
 
-  // done init
-  log('Initialize complete.');
+  log('Analyzer ready');
 })();
 </script>
 </body>
