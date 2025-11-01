@@ -1,398 +1,190 @@
 <!doctype html>
-<html class="dark" lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Analyze Account — Drug Keyword Scanner (with debug)</title>
+  <title>Screenshot Scanner</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    .clickable { cursor: pointer; }
-    #debugLog { font-family: monospace; font-size:12px; white-space:pre-wrap; background:#0b1220; color:#dbeafe; padding:10px; border-radius:6px; height:180px; overflow:auto; }
-  </style>
+  <style> body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; } </style>
 
-  <!-- Tesseract.js -->
+  <!-- Tesseract -->
   <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body class="bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-  <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-3">Screenshot Keyword Scanner — Debug Enabled</h1>
-    <p class="text-sm text-slate-600 dark:text-slate-300 mb-6">
-      Upload a screenshot (WhatsApp / Instagram / etc). The page will OCR the image, detect configured keywords, and save selected username + platform and matched keywords to Supabase.
-    </p>
+  <div class="max-w-3xl mx-auto p-6">
+    <a href="../FrontEnd/DP1.html"><h1 class="text-2xl font-bold mb-2">Screenshot Scanner</h1></a>
+    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Upload screenshot → choose platform → type username shown in the screenshot → Analyze. Results are saved to Supabase and will appear in the Dashboard.</p>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
-      <!-- Upload / Drop zone (with visible fallback) -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">Upload screenshot</label>
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow mb-6">
+      <!-- Upload -->
+      <label class="block text-sm font-medium mb-2">Upload screenshot</label>
+      <div class="flex items-center gap-3 mb-3">
+        <input id="visibleFileInput" type="file" accept="image/*" />
+        <button id="openChooserBtn" class="px-3 py-2 bg-indigo-600 text-white rounded">Open file chooser</button>
+        <button id="clearBtn" class="px-3 py-2 border rounded">Clear</button>
+      </div>
 
-        <!-- Visible fallback file input and guaranteed button -->
-        <div class="flex items-center gap-3 mb-2">
-          <input id="visibleFileInput" type="file" accept="image/*" style="display:block" />
-          <button id="openChooserBtn" type="button" class="px-3 py-2 bg-indigo-600 text-white rounded">Open file chooser</button>
-          <button id="testClickBtn" type="button" class="px-3 py-2 border rounded text-sm">Test .click()</button>
+      <!-- Preview + info -->
+      <div class="flex items-center gap-4 mb-4">
+        <div style="width:120px;height:80px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <img id="previewImg" alt="preview" style="max-width:100%;max-height:100%;display:none"/>
+          <span id="previewPlaceholder" style="color:#94a3b8">No image</span>
         </div>
-
-        <!-- Hidden original input kept for compatibility -->
-        <input id="imageInput" type="file" accept="image/*" class="sr-only" />
-
-        <div id="dropZone" tabindex="0" role="button"
-             aria-label="Upload image by clicking or drag-and-drop"
-             class="clickable border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 flex items-center gap-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          <div class="flex-1">
-            <div id="dropText" class="text-sm text-slate-600 dark:text-slate-400">
-              Click here or press Enter to choose a file, or drag & drop an image
-            </div>
-            <div id="fileInfo" class="text-xs text-slate-500 mt-2"></div>
-          </div>
-
-          <div class="w-28 h-20 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex items-center justify-center">
-            <img id="previewImg" alt="preview" class="max-h-full max-w-full hidden"/>
-            <span id="previewPlaceholder" class="text-xs text-slate-400">No image</span>
-          </div>
+        <div>
+          <div id="fileInfo" class="text-xs text-slate-500"></div>
         </div>
       </div>
 
-      <!-- Platform & Username -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">Platform</label>
-          <div class="flex gap-3">
-            <label class="inline-flex items-center gap-2"><input id="platformInstagram" type="checkbox" value="Instagram" class="form-checkbox"/><span class="text-sm">Instagram</span></label>
-            <label class="inline-flex items-center gap-2"><input id="platformWhatsapp" type="checkbox" value="WhatsApp" class="form-checkbox"/><span class="text-sm">WhatsApp</span></label>
-            <label class="inline-flex items-center gap-2"><input id="platformOtherCheck" type="checkbox" value="Other" class="form-checkbox"/><span class="text-sm">Other</span></label>
-          </div>
+      <!-- Platform dropdown -->
+      <label class="block text-sm font-medium mb-2">Platform</label>
+      <select id="platformSelect" class="form-select block w-full rounded border-slate-300 py-2 px-3 mb-3">
+        <option value="">-- choose platform --</option>
+        <option>Instagram</option>
+        <option>WhatsApp</option>
+        <option>Signal</option>
+        <option>Facebook</option>
+        <option>Telegram</option>
+        <option>Snapchat</option>
+        <option>TikTok</option>
+        <option>Other</option>
+      </select>
 
-          <div id="otherPlatformWrapper" class="mt-2 hidden">
-            <input id="platformOtherText" type="text" placeholder="e.g. Telegram" class="form-input block w-full rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-white dark:bg-slate-900"/>
-          </div>
-        </div>
+      <!-- Username input -->
+      <label class="block text-sm font-medium mb-2">Username shown in the screenshot</label>
+      <input id="usernameInput" type="text" placeholder="@username or phone" class="form-input block w-full rounded border-slate-300 py-2 px-3 mb-4"/>
 
-        <div>
-          <label class="block text-sm font-medium mb-2">Username (select)</label>
-          <div class="flex gap-2">
-            <select id="usernameSelect" class="form-select block w-full rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-white dark:bg-slate-900">
-              <option value="">-- choose username --</option>
-              <option value="@user123">@user123</option>
-              <option value="@user456">@user456</option>
-            </select>
-          </div>
-          <p class="text-xs text-slate-400 mt-1">Or add one below</p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-2">Add username</label>
-          <div class="flex gap-2">
-            <input id="newUsernameInput" type="text" placeholder="@example" class="form-input block w-full rounded border-slate-300 dark:border-slate-700 py-2 px-3 bg-white dark:bg-slate-900"/>
-            <button id="addUsernameBtn" type="button" class="px-3 py-2 bg-indigo-600 text-white rounded">Add</button>
-          </div>
-        </div>
-      </div>
-
+      <!-- Analyze -->
       <div class="flex items-center gap-3">
-        <button id="analyzeBtn" type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded">
+        <button id="analyzeBtn" class="px-4 py-2 bg-indigo-600 text-white rounded inline-flex items-center gap-2">
           <svg id="spinner" class="animate-spin hidden h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none"/><path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
           <span>Analyze</span>
         </button>
-
-        <button id="clearBtn" type="button" class="px-3 py-2 border rounded text-sm">Clear</button>
-
         <div id="status" class="text-sm text-slate-500"></div>
       </div>
     </div>
 
-    <!-- Results area -->
-    <div id="results" class="mt-6 hidden">
-      <div class="bg-white dark:bg-slate-800 p-4 rounded shadow">
-        <h2 class="font-semibold mb-2">Detected Keywords</h2>
-        <div id="keywordTags" class="flex flex-wrap gap-2 mb-3"></div>
-
-        <h3 class="text-sm font-medium">Analysis JSON</h3>
-        <pre id="jsonResult" class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded overflow-auto"></pre>
-      </div>
+    <!-- Report -->
+    <div id="report" class="hidden bg-white dark:bg-slate-800 p-4 rounded shadow">
+      <h2 class="font-semibold mb-2">Analysis Report</h2>
+      <div id="reportContent" class="text-sm text-slate-700 dark:text-slate-200"></div>
+      <pre id="jsonResult" class="mt-3 text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded overflow-auto"></pre>
     </div>
 
-    <!-- Saved rows -->
-    <div id="savedRows" class="mt-6 hidden">
-      <div class="bg-white dark:bg-slate-800 p-4 rounded shadow">
-        <h2 class="font-semibold mb-3">Saved Analyses (Supabase)</h2>
-        <div class="overflow-auto text-xs">
-          <table class="w-full">
-            <thead>
-              <tr class="text-left"><th class="pr-4">When</th><th class="pr-4">Username</th><th class="pr-4">Platforms</th><th class="pr-4">Keywords</th><th class="pr-4">Types</th></tr>
-            </thead>
-            <tbody id="rowsBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Debug log -->
-    <div class="mt-6">
-      <h3 class="text-sm font-medium mb-2">Client-side Debug Log</h3>
-      <div id="debugLog">Debug log will appear here — it shows clicks, drag events, errors, and status messages.</div>
-    </div>
-
+    <!-- Small debug area -->
+    <div class="mt-4 text-xs text-slate-500" id="debug"></div>
   </div>
 
 <script>
 (() => {
-  /* ---------- CONFIG (edit these if needed) ---------- */
+  /* ---------- CONFIG ---------- */
   const SUPABASE_URL = 'https://zjhbhneyvvjzxsexdgod.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqaGJobmV5dnZqenhzZXhkZ29kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0OTU0MjgsImV4cCI6MjA3NzA3MTQyOH0.C0A_VvNrqm_dZcxh2mlWk6mO6t1jkF9YC3h9ycFJp8c';
-  /* ---------- KEYWORD_MAP: edit/add/remove keywords here ---------- */
-  // Keys are matched (lowercased) against OCR tokens; values are normalized types saved to DB.
   const KEYWORD_MAP = {
-    'fentanyl': 'opioid',
-    'fenta': 'opioid',
-    'oxy': 'opioid',
-    'oxycodone': 'opioid',
-    'heroin': 'opioid',
-    'xanax': 'benzo',
-    'alprazolam': 'benzo',
-    'klonopin': 'benzo',
-    'clonazepam': 'benzo',
-    'meth': 'stimulant',
-    'methamphetamine': 'stimulant',
-    'cocaine': 'stimulant',
-    'mdma': 'stimulant',
-    'weed': 'cannabis',
-    'marijuana': 'cannabis',
-    'ganja': 'cannabis',
-    'pill': 'pill',
-    'pills': 'pill',
-    'tablet': 'pill',
-    'script': 'prescription',
-    'prescription': 'prescription',
-    'plug': 'slang',
-    'sell': 'activity',
-    'selling': 'activity',
-    'deal': 'activity'
+    /* edit this list to add/remove keywords */
+    'fentanyl':'opioid','fenta':'opioid','oxy':'opioid','oxycodone':'opioid','heroin':'opioid',
+    'xanax':'benzo','alprazolam':'benzo','klonopin':'benzo','clonazepam':'benzo',
+    'meth':'stimulant','methamphetamine':'stimulant','cocaine':'stimulant','mdma':'stimulant',
+    'weed':'cannabis','marijuana':'cannabis','ganja':'cannabis',
+    'pill':'pill','pills':'pill','tablet':'pill',
+    'script':'prescription','prescription':'prescription',
+    'plug':'slang','sell':'activity','selling':'activity','deal':'activity'
   };
   /* ---------- END CONFIG ---------- */
 
-  // Init Supabase
   const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Elements
+  // elements
   const visibleFileInput = document.getElementById('visibleFileInput');
   const openChooserBtn = document.getElementById('openChooserBtn');
-  const testClickBtn = document.getElementById('testClickBtn');
-  const imageInput = document.getElementById('imageInput'); // hidden input (legacy)
-  const dropZone = document.getElementById('dropZone');
+  const clearBtn = document.getElementById('clearBtn');
   const previewImg = document.getElementById('previewImg');
   const previewPlaceholder = document.getElementById('previewPlaceholder');
   const fileInfo = document.getElementById('fileInfo');
   const analyzeBtn = document.getElementById('analyzeBtn');
   const spinner = document.getElementById('spinner');
-  const statusDiv = document.getElementById('status');
-  const resultsSection = document.getElementById('results');
-  const keywordTags = document.getElementById('keywordTags');
+  const status = document.getElementById('status');
+  const report = document.getElementById('report');
+  const reportContent = document.getElementById('reportContent');
   const jsonResult = document.getElementById('jsonResult');
-  const rowsBody = document.getElementById('rowsBody');
-  const savedRows = document.getElementById('savedRows');
-  const platformOtherCheck = document.getElementById('platformOtherCheck');
-  const otherPlatformWrapper = document.getElementById('otherPlatformWrapper');
-  const platformOtherText = document.getElementById('platformOtherText');
-  const usernameSelect = document.getElementById('usernameSelect');
-  const newUsernameInput = document.getElementById('newUsernameInput');
-  const addUsernameBtn = document.getElementById('addUsernameBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const debugLog = document.getElementById('debugLog');
+  const usernameInput = document.getElementById('usernameInput');
+  const platformSelect = document.getElementById('platformSelect');
+  const debug = document.getElementById('debug');
 
-  const fileMimeImage = /^image\//;
+  const fileMimeImage = /^image\\//;
 
-  // Debug logging helper
-  function logDebug(msg) {
-    const t = new Date().toLocaleTimeString();
-    debugLog.textContent = `[${t}] ${msg}\n` + debugLog.textContent;
-    console.log('[analyze-debug] ' + msg);
-  }
+  function log(msg) { debug.textContent = msg; console.log('[analyze] '+msg); }
 
-  // Global JS error handlers
-  window.addEventListener('error', (e) => {
-    logDebug('window.onerror: ' + (e && e.message ? e.message : JSON.stringify(e)));
-  });
-  window.addEventListener('unhandledrejection', (e) => {
-    logDebug('unhandledrejection: ' + (e && e.reason ? (e.reason.message || JSON.stringify(e.reason)) : JSON.stringify(e)));
-  });
-
-  // Robust setFile (used by visible chooser and drop)
   function setFile(file) {
-    if (!file) return;
-    if (!fileMimeImage.test(file.type)) { alert('Please upload an image file.'); logDebug('Rejected non-image file: ' + file.type); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      previewImg.src = ev.target.result;
-      previewImg.classList.remove('hidden');
-      previewPlaceholder.classList.add('hidden');
-      logDebug('Preview loaded for ' + file.name);
+    if(!file) return;
+    if(!fileMimeImage.test(file.type)){ alert('Upload an image file'); return; }
+    const fr = new FileReader();
+    fr.onload = (e) => {
+      previewImg.src = e.target.result;
+      previewImg.style.display = 'block';
+      previewPlaceholder.style.display = 'none';
     };
-    reader.onerror = (err) => {
-      logDebug('FileReader error: ' + err);
-    };
-    reader.readAsDataURL(file);
-    fileInfo.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
-    // Sync both inputs so existing code reads imageInput._file
-    imageInput._file = file;
+    fr.readAsDataURL(file);
     visibleFileInput._file = file;
-    logDebug('File set: ' + file.name);
+    fileInfo.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
+    log('File selected: ' + file.name);
   }
 
-  // Visible chooser handlers
+  // visible chooser button
+  openChooserBtn.addEventListener('click', () => visibleFileInput.click());
   visibleFileInput.addEventListener('change', (e) => {
     const f = e.target.files && e.target.files[0];
-    if (!f) { logDebug('visibleFileInput change: no file selected'); return; }
     setFile(f);
   });
-  openChooserBtn.addEventListener('click', () => {
-    logDebug('openChooserBtn clicked -> visibleFileInput.click()');
-    try { visibleFileInput.click(); } catch (err) { logDebug('visibleFileInput.click() error: ' + err); }
-  });
-  testClickBtn.addEventListener('click', () => {
-    logDebug('testClickBtn clicked -> attempting imageInput.click() (hidden)');
-    try {
-      imageInput.click();
-      logDebug('imageInput.click() called (may be blocked if not in user gesture)');
-    } catch (err) { logDebug('imageInput.click() exception: ' + err); }
-  });
-
-  // Drop zone behaviour (attempt hidden input click, fallback to visible)
-  function openHiddenChooser() {
-    try {
-      imageInput.click();
-      logDebug('Called imageInput.click() from dropZone');
-    } catch (err) {
-      logDebug('imageInput.click() blocked/errored from dropZone: ' + err + ' -> falling back to visibleFileInput.click()');
-      try { visibleFileInput.click(); } catch (err2) { logDebug('visibleFileInput.click() fallback error: ' + err2); }
-    }
-  }
-
-  dropZone.addEventListener('click', (e) => {
-    logDebug('dropZone clicked');
-    openHiddenChooser();
-  });
-  dropZone.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      logDebug('dropZone keyboard activate (' + e.key + ')');
-      openHiddenChooser();
-    }
-  });
-
-  ['dragenter','dragover'].forEach(type => {
-    dropZone.addEventListener(type, (e) => {
-      e.preventDefault();
-      e.dataTransfer && (e.dataTransfer.dropEffect = 'copy');
-      dropZone.classList.add('ring-2','ring-indigo-400');
-      logDebug(type + ' event on dropZone');
-    });
-  });
-  ['dragleave','dragend'].forEach(type => {
-    dropZone.addEventListener(type, () => {
-      dropZone.classList.remove('ring-2','ring-indigo-400');
-      logDebug(type + ' on dropZone');
-    });
-  });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('ring-2','ring-indigo-400');
-    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if (!f) {
-      logDebug('drop event: no files dropped');
-      return;
-    }
-    logDebug('drop event: file dropped -> ' + f.name);
-    setFile(f);
-  });
-
-  // Add username to dropdown
-  addUsernameBtn.addEventListener('click', () => {
-    const v = newUsernameInput.value.trim();
-    if (!v) { alert('Enter a username to add (e.g. @someone)'); return; }
-    for (const opt of usernameSelect.options) {
-      if (opt.value.toLowerCase() === v.toLowerCase()) {
-        usernameSelect.value = opt.value;
-        newUsernameInput.value = '';
-        logDebug('Username already existed; selected: ' + opt.value);
-        return;
-      }
-    }
-    const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
-    usernameSelect.appendChild(opt);
-    usernameSelect.value = v;
-    newUsernameInput.value = '';
-    logDebug('Added username: ' + v);
-  });
-
-  platformOtherCheck.addEventListener('change', () => {
-    otherPlatformWrapper.classList.toggle('hidden', !platformOtherCheck.checked);
-    logDebug('platformOtherCheck changed: ' + platformOtherCheck.checked);
-  });
-
   clearBtn.addEventListener('click', () => {
-    previewImg.src = ''; previewImg.classList.add('hidden'); previewPlaceholder.classList.remove('hidden');
-    fileInfo.textContent = ''; imageInput._file = null; visibleFileInput._file = null;
-    statusDiv.textContent = ''; resultsSection.classList.add('hidden');
-    logDebug('Cleared file and UI state');
+    previewImg.src=''; previewImg.style.display='none'; previewPlaceholder.style.display='block';
+    fileInfo.textContent=''; visibleFileInput._file = null; report.classList.add('hidden'); jsonResult.textContent=''; reportContent.innerHTML='';
+    log('Cleared UI');
   });
 
-  // Analyze button: OCR -> keyword match -> save to Supabase
+  // analyze flow
   analyzeBtn.addEventListener('click', async () => {
-    const selectedUsername = usernameSelect.value.trim();
-    const platforms = [];
-    if (document.getElementById('platformInstagram').checked) platforms.push('Instagram');
-    if (document.getElementById('platformWhatsapp').checked) platforms.push('WhatsApp');
-    if (platformOtherCheck.checked) {
-      const o = platformOtherText.value.trim();
-      platforms.push(o || 'Other');
-    }
-    const file = imageInput._file || visibleFileInput._file || null;
+    const username = (usernameInput.value || '').trim();
+    const platform = (platformSelect.value || '').trim();
+    const file = visibleFileInput._file || null;
 
-    if (!selectedUsername) { alert('Please select or add a username before analyzing.'); logDebug('Analyze pressed but no username selected'); return; }
+    if (!platform) { alert('Select a platform'); return; }
+    if (!username) { alert('Type the username found in the screenshot'); return; }
+
     spinner.classList.remove('hidden');
-    statusDiv.textContent = 'Starting analysis...';
-    logDebug('Analyze started for ' + selectedUsername + ' (file present: ' + Boolean(file) + ')');
-    resultsSection.classList.add('hidden');
+    status.textContent = 'Analyzing...';
+    log('Starting analysis for ' + username + ' on ' + platform + ' (file present: ' + Boolean(file) + ')');
 
     try {
       let ocrText = '';
       if (file) {
-        statusDiv.textContent = 'Running OCR (Tesseract)... this may take a few seconds';
-        logDebug('Initializing Tesseract worker');
+        // OCR
         const { createWorker } = Tesseract;
         const worker = createWorker({
           logger: m => {
-            if (m.status && m.progress) {
-              statusDiv.textContent = `OCR: ${m.status} ${(m.progress*100).toFixed(0)}%`;
-              logDebug('Tesseract: ' + m.status + ' ' + (m.progress ? (m.progress*100).toFixed(0) + '%' : ''));
-            }
+            if (m.status && m.progress) status.textContent = `OCR: ${m.status} ${(m.progress*100).toFixed(0)}%`;
           }
         });
         await worker.load();
         await worker.loadLanguage('eng');
         await worker.initialize('eng');
         const imgData = await readFileAsDataURL(file);
-        logDebug('Calling worker.recognize()');
         const { data: { text } } = await worker.recognize(imgData);
         ocrText = text || '';
         await worker.terminate();
-        logDebug('OCR complete, characters: ' + (ocrText.length));
+        log('OCR finished, chars:' + ocrText.length);
       } else {
-        statusDiv.textContent = 'No image provided — analyzing without OCR.';
-        logDebug('No file provided for OCR.');
+        log('No file provided (will still save username/platform with empty keywords)');
       }
 
-      // Tokenize and find matches
+      // tokenize
       const tokens = tokenize(ocrText);
       const tokensFiltered = tokens.filter(t => !t.startsWith('@') && !/^https?:/.test(t) && t.length >= 2);
 
       const matched = new Set();
       const matchedTypes = new Set();
-
       for (const t of tokensFiltered) {
         for (const kw in KEYWORD_MAP) {
           if (t === kw || t.includes(kw) || kw.includes(t)) {
@@ -404,101 +196,51 @@
 
       const detectedKeywords = Array.from(matched);
       const detectedTypes = Array.from(matchedTypes);
-      const score = Math.min(100, Math.max(10, detectedKeywords.length * 25));
+      const score = Math.min(100, Math.max(0, detectedKeywords.length * 25));
 
-      const result = {
-        username: selectedUsername,
-        platforms,
-        ocr_text_snippet: (ocrText || '').slice(0, 600),
-        keywords: detectedKeywords,
-        types: detectedTypes,
-        score,
-        timestamp: new Date().toISOString()
+      const reportObj = {
+        username, platform, detectedKeywords, detectedTypes, score, timestamp: new Date().toISOString()
       };
 
-      showResult(result);
-      logDebug('Detected keywords: ' + detectedKeywords.join(', '));
+      // show report
+      reportContent.innerHTML = `
+        <div><strong>Username:</strong> ${escapeHtml(username)}</div>
+        <div><strong>Platform:</strong> ${escapeHtml(platform)}</div>
+        <div><strong>Detected keywords:</strong> ${detectedKeywords.join(', ') || '—'}</div>
+        <div><strong>Detected types:</strong> ${detectedTypes.join(', ') || '—'}</div>
+        <div><strong>Score:</strong> ${score}</div>
+      `;
+      jsonResult.textContent = JSON.stringify(reportObj, null, 2);
+      report.classList.remove('hidden');
 
-      // Save to Supabase
-      statusDiv.textContent = 'Saving to server...';
-      logDebug('Saving analysis to Supabase');
+      // insert to supabase
+      status.textContent = 'Saving to database...';
       const insertPayload = {
-        username: result.username,
-        platforms: result.platforms,
-        detected_keywords: result.keywords,
-        detected_drug_types: result.types,
-        score: result.score
+        username: reportObj.username,
+        platform: reportObj.platform,
+        detected_keywords: reportObj.detectedKeywords,
+        detected_drug_types: reportObj.detectedTypes,
+        score: reportObj.score
       };
       const { error } = await supabase.from('analyses').insert([insertPayload]);
       if (error) {
-        logDebug('Supabase insert error: ' + (error.message || JSON.stringify(error)));
-        statusDiv.textContent = 'Server save failed.';
-        alert('Server save failed: ' + (error.message || JSON.stringify(error)));
+        log('Supabase insert error: ' + (error.message || JSON.stringify(error)));
+        status.textContent = 'Save failed';
+        alert('Save failed: ' + (error.message || JSON.stringify(error)));
       } else {
-        statusDiv.textContent = 'Saved to server.';
-        logDebug('Saved to Supabase successfully');
+        status.textContent = 'Saved';
+        log('Saved to Supabase');
       }
 
-      await loadSavedRows();
-
     } catch (err) {
-      console.error(err);
-      logDebug('Analysis error: ' + (err && err.message ? err.message : JSON.stringify(err)));
-      statusDiv.textContent = 'Analysis failed: ' + (err.message || err);
-      alert('Analysis failed: ' + (err.message || err));
+      log('Error: ' + (err && err.message ? err.message : err));
+      alert('Analysis error: ' + (err && err.message ? err.message : JSON.stringify(err)));
     } finally {
       spinner.classList.add('hidden');
     }
   });
 
-  function showResult(result) {
-    keywordTags.innerHTML = '';
-    for (const k of (result.keywords || [])) {
-      const el = document.createElement('span');
-      el.className = 'px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs text-slate-700 dark:text-slate-200';
-      el.textContent = k;
-      keywordTags.appendChild(el);
-    }
-    jsonResult.textContent = JSON.stringify(result, null, 2);
-    resultsSection.classList.remove('hidden');
-  }
-
-  // Load saved rows from Supabase
-  async function loadSavedRows() {
-    try {
-      const { data, error } = await supabase
-        .from('analyses')
-        .select('id,username,platforms,detected_keywords,detected_drug_types,score,created_at')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        logDebug('Could not load saved rows: ' + (error.message || JSON.stringify(error)));
-        savedRows.classList.remove('hidden');
-        rowsBody.innerHTML = `<tr><td colspan="5">Failed to load saved rows: ${escapeHtml(error.message || JSON.stringify(error))}</td></tr>`;
-        return;
-      }
-
-      rowsBody.innerHTML = '';
-      for (const r of (data || [])) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="pr-4 align-top">${new Date(r.created_at).toLocaleString()}</td>
-          <td class="pr-4 align-top">${escapeHtml(r.username)}</td>
-          <td class="pr-4 align-top">${(r.platforms || []).join(', ')}</td>
-          <td class="pr-4 align-top">${(r.detected_keywords || []).join(', ')}</td>
-          <td class="pr-4 align-top">${(r.detected_drug_types || []).join(', ')}</td>
-        `;
-        rowsBody.appendChild(tr);
-      }
-      savedRows.classList.remove('hidden');
-      logDebug('Loaded saved rows from Supabase (count: ' + (data ? data.length : 0) + ')');
-    } catch (err) {
-      logDebug('loadSavedRows error: ' + (err && err.message ? err.message : JSON.stringify(err)));
-    }
-  }
-
-  // Utilities
+  // helpers
   function readFileAsDataURL(file) {
     return new Promise((res, rej) => {
       const fr = new FileReader();
@@ -507,21 +249,16 @@
       fr.readAsDataURL(file);
     });
   }
-
   function tokenize(text) {
     if (!text) return [];
     const cleaned = text.toLowerCase().replace(/[“”"«»(),:;\/\\\[\]\{\}\*<>?+=|~`…—–]/g, ' ');
     return cleaned.split(/\s+/).filter(Boolean);
   }
-
   function escapeHtml(s) {
     if (!s) return '';
     return String(s).replace(/[&<>"'`]/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[m]));
   }
-
-  // Initial load of saved rows & initial debug message
-  logDebug('Page loaded. Trying to load saved rows...');
-  loadSavedRows();
+  function log(msg){ debug.textContent = msg; console.log('[analyze]' + msg); }
 
 })();
 </script>
