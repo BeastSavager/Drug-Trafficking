@@ -1,1 +1,8 @@
+com\example\analyzer\model\Analysis.class
+com\example\analyzer\config\WebConfig.class
+com\example\analyzer\repo\AnalysisRepository.class
+com\example\analyzer\controller\AnalysisController.class
 com\example\FeedbackServer.class
+com\example\analyzer\Analysis.class
+com\example\analyzer\AnalyzerApplication.class
+com\example\analyzer\service\SeverityService.class
